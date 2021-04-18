@@ -14,10 +14,13 @@ public class GeologicalClass implements Serializable {
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
     private Integer id;
+    
     @Expose
     private String name;
+    
     @Expose
     private String code;
+    
     @JsonManagedReference
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "section_id")
