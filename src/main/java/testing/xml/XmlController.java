@@ -27,8 +27,9 @@ public class XmlController {
     public String exportSections() {
         // Exeption
         Iterable<Section> sections = sectionRepository.findAll();
-        if (sections.toString().equals("[]")) 
+        if (sections.toString().equals("[]")) {
             throw new NotFoundException("! No any section found (DB is empty) !");
+        }
         Job job = xmlService.startJob(JType.EXPORT);
         xmlService.exportXLS(job);
         throw new OkException("Job with ID=[" + job.getId().toString() + "] started sucsessfully");
@@ -39,13 +40,15 @@ public class XmlController {
     public String getExportStatus(@PathVariable Integer id) {
         // Exeption
         Job job = jobRepository.findOne(id);
-        if (job == null) 
+        if (job == null) {
             throw new NotFoundException("! Job with this ID is not found !");
+        }
         if (id == null) {
             throw new BadRequestException("! Wrong ID !");
         }
-        if (job.getType().equals(JType.IMPORT))
+        if (job.getType().equals(JType.IMPORT)) {
             throw new UnprocException("! Job type with this ID is not [export]!");
+        }
         throw new OkException("Status of Job with ID=[" + job.getId().toString() + 
                 "] is [" + xmlService.getJobStatus(id).toString() + "]");
     }
@@ -55,13 +58,15 @@ public class XmlController {
     public Resource getXLSFileByJobId(@PathVariable Integer id) {
         // Exeption
         Job job = jobRepository.findOne(id);
-        if (job == null) 
+        if (job == null) {
             throw new NotFoundException("! Job with this ID is not found !");
+        }
         if (id == null) {
             throw new BadRequestException("! Wrong ID !");
         }
-        if (job.getType().equals(JType.IMPORT))
+        if (job.getType().equals(JType.IMPORT)) {
             throw new UnprocException("! Job type with this ID is not [export]!");
+        }
         Resource resource = xmlService.downloadXLSFile(id);
         return resource;
     }
@@ -82,13 +87,15 @@ public class XmlController {
     public String getImportStatus(@PathVariable Integer id) {
         // Exeption
         Job job = jobRepository.findOne(id);
-        if (job == null) 
+        if (job == null) {
             throw new NotFoundException("! Job with this ID is not found !");
+        }
         if (id == null) {
             throw new BadRequestException("! Wrong ID !");
         }
-        if (job.getType().equals(JType.EXPORT))
+        if (job.getType().equals(JType.EXPORT)) {
             throw new UnprocException("! Job type with this ID is not [import]!");
+        }
         throw new OkException("Status of Job with ID=[" + job.getId().toString() + 
                 "] is [" + xmlService.getJobStatus(id).toString() + "]");
     }
