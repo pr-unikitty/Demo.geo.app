@@ -42,18 +42,21 @@ public class XmlService {
     public JStatus getJobStatus(Integer jobId) {
         Job job = jobRepository.findOne(jobId);
         // Exeption
-        if (job == null) 
+        if (job == null) {
             throw new NotFoundException("! Job with this ID is not found !");
+        }
         return job.getStatus();
     }
     
     // For TZ#3: /export/id/file
     // !name of file is obtained by: id.xls 
     public Resource downloadXLSFile(Integer id) {
-        if (getJobStatus(id).equals(JStatus.DONE)) 
+        if (getJobStatus(id).equals(JStatus.DONE)) {
             return xmlDBService.loadResource(id.toString() + ".xls");
-        if (getJobStatus(id).equals(JStatus.IN_PROGRESS)) 
+        }
+        if (getJobStatus(id).equals(JStatus.IN_PROGRESS)) {
             throw new ExportInProcessException("! Export is still in process !");
+        }
         throw new ExportErrorException("! Export job ended with error !");
     }
 
@@ -122,13 +125,15 @@ public class XmlService {
                 for (int c = 1; c < currentRow.getLastCellNum(); c += 2) {
                     // Name
                     HSSFCell geoNameCell = currentRow.getCell(c);
-                    if(geoNameCell == null)
+                    if (geoNameCell == null) {
                         continue;
+                    }
                     String geoClassName = geoNameCell.getStringCellValue();
                     // Code
                     HSSFCell geoCodeCell = currentRow.getCell(c + 1);
-                    if(geoCodeCell == null)
+                    if (geoCodeCell == null) {
                         continue;
+                    }
                     String geoClassCode = geoCodeCell.getStringCellValue();
                     
                     listOfGeoClasses.add(new GeologicalClass(section, geoClassName, geoClassCode));
