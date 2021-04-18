@@ -116,26 +116,17 @@ public class XmlService {
                 if (currentRow == null) {
                     continue;
                 }
-                
                 String secName = currentRow.getCell(0).getStringCellValue();
                 Section section = sectionRepository.save(new Section(secName));
 
                 // Jumping for pairs {geoClass, geoCode}
                 List<GeologicalClass> listOfGeoClasses = new ArrayList<>();
-                for (int c = 1; c < currentRow.getLastCellNum(); c += 2) {
-                    // Name
-                    HSSFCell geoNameCell = currentRow.getCell(c);
-                    if (geoNameCell == null) {
+                for (int j = 1; j < currentRow.getLastCellNum(); j += 2) {
+                    String geoClassName = readCell(currentRow, j);
+                    String geoClassCode = readCell(currentRow, j+1);
+                    if (geoClassName == null || geoClassCode == null) {
                         continue;
                     }
-                    String geoClassName = geoNameCell.getStringCellValue();
-                    // Code
-                    HSSFCell geoCodeCell = currentRow.getCell(c + 1);
-                    if (geoCodeCell == null) {
-                        continue;
-                    }
-                    String geoClassCode = geoCodeCell.getStringCellValue();
-                    
                     listOfGeoClasses.add(new GeologicalClass(section, geoClassName, geoClassCode));
                 }
                 section.addListOfGeoClasses(listOfGeoClasses);
@@ -150,9 +141,18 @@ public class XmlService {
         }
     }
     
-    // Auxiliary func to add cell to row in HSSF book
+    // Auxiliary func for adding cell to row in HSSF book
     private void addCell(HSSFRow row, String value) {
         HSSFCell newCell = row.createCell(Math.max(row.getLastCellNum(), 0));
         newCell.setCellValue(value);
+    }
+    
+    // Auxiliary func for reading geoClassName or geoClassCode from HSSF cell
+private String readCell (HSSFRow currentRow, int cellNum) {
+        HSSFCell geoNameCell = currentRow.getCell(cellNum);
+        if(geoNameCell == null) {
+            return null;
+        }
+        return geoNameCell.getStringCellValue();
     }
 }
