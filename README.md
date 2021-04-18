@@ -1,4 +1,6 @@
 # REST CRUD API for Sections and GeologicalClasses + importing/exporting XML files  
+Technology stack: Spring, Hipernate, SpringBoot, SpringData, ApachePOI, Gradle
+
 ## Features  
   * The project was developed using Gradle Build Tool  
 
