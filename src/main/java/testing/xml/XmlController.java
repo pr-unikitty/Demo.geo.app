@@ -49,8 +49,9 @@ public class XmlController {
         if (job.getType().equals(JType.IMPORT)) {
             throw new UnprocException("! Job type with this ID is not [export]!");
         }
-        throw new OkException("Status of Job with ID=[" + job.getId().toString() + 
-                "] is [" + xmlService.getJobStatus(id).toString() + "]");
+        String jobId = job.getId().toString();
+        String jobStatus = xmlService.getJobStatus(id).toString();
+        throw new OkException("Status of Job with ID=[" + jobId + "] is [" + jobStatus + "]");
     }
     
     // Returns a file by Job ID
