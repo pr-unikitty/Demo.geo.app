@@ -34,8 +34,9 @@ public class SectionService {
     public String findAllToJSON() {
         Iterable<Section> sections = sectionRepository.findAll();
         // Exeption
-        if (sections.toString().equals("[]")) 
+        if (sections.toString().equals("[]")) {
             throw new NotFoundException("! No any section found (DB is empty) !");
+        }
         // Concatenation with general "{" and "}" to list of each record
         String output = "{";
         for (Section sec : sections) {
@@ -48,8 +49,9 @@ public class SectionService {
     // Add new Section with one couple {geoClassName, geoClassCode}
     public String addSection(String secName, String geoName, String geoCode) {
         // Exeption
-        if (sectionRepository.findByName(secName).size() != 0)
+        if (sectionRepository.findByName(secName).size() != 0) {
             throw new UnprocException("! Section with this name is already exist !");
+        }
         Section section = new Section(secName);
         GeologicalClass geoClass = new GeologicalClass(section, geoName, geoCode);
         section.addGeoClass(geoClass);
@@ -60,8 +62,9 @@ public class SectionService {
     // Delete one record by ID    
     public void delete(Integer id) {
         // Exeption
-        if (sectionRepository.findOne(id) == null) 
+        if (sectionRepository.findOne(id) == null) {
             throw new NotFoundException("! Section with this ID can not be deleted because is not found !");
+        }
         sectionRepository.delete(id);
     }
 
@@ -69,8 +72,9 @@ public class SectionService {
     public void deleteAll() {
         Iterable<Section> sections = sectionRepository.findAll();
         // Exeption
-        if (sections.toString().equals("[]")) 
+        if (sections.toString().equals("[]")) {
             throw new NotFoundException("! No any section found (DB is empty) !");
+        }
         // Concatenation with general "{" and "}" to list of each record
         for (Section sec : sections) {
             sectionRepository.delete(sec.getId());
@@ -86,10 +90,12 @@ public class SectionService {
                 List<GeologicalClass> geoClasses = sec.getGeologicalClasses();
                 for (GeologicalClass geoClass : geoClasses) {
                     // Exceptions
-                    if (geoClass.getName().equals(geoName))
+                    if (geoClass.getName().equals(geoName)) {
                         throw new UnprocException("! GeologicalClass witn this Name already exists in this Section!");
-                    if (geoClass.getCode().equals(geoCode))
+                    }
+                    if (geoClass.getCode().equals(geoCode)) {
                         throw new UnprocException("! GeologicalClass witn this Code already exists in this Section!");
+                    }
                 } 
                 // If geo is not exists, add to existing sec
                 sec.addGeoClass(new GeologicalClass(sec, geoName, geoCode));
@@ -111,12 +117,14 @@ public class SectionService {
         List<Section> neededSections = new ArrayList<>();
         Iterable<GeologicalClass> geoClasses = geoRepository.findAll();
         for (GeologicalClass geoClass : geoClasses) {
-            if (geoClass.getCode().equals(geoCode))
+            if (geoClass.getCode().equals(geoCode)) {
                 neededSections.add(geoClass.getSection());
             }
+        }
         // Exeption
-        if (neededSections.toString().equals("[]")) 
+        if (neededSections.toString().equals("[]")) {
             throw new NotFoundException("! No any section found !");
+        }
         // List to JSON format
         String output = "{";
         for (Section sec : neededSections) {
