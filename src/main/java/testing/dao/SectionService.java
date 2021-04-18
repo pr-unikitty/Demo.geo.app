@@ -21,7 +21,6 @@ public class SectionService {
     // simple method show ArrayList as mem's address
     public String findOneToJSON(Integer id) {
         Section section = sectionRepository.findOne(id);
-        // Exeption
         if (section == null) 
             throw new NotFoundException("! Section with this ID is not found !");
         // With only fields with @Expose
@@ -33,7 +32,6 @@ public class SectionService {
     // (uses previous function findOneToJSON)
     public String findAllToJSON() {
         Iterable<Section> sections = sectionRepository.findAll();
-        // Exeption
         if (sections.toString().equals("[]")) {
             throw new NotFoundException("! No any section found (DB is empty) !");
         }
@@ -48,7 +46,6 @@ public class SectionService {
     
     // Add new Section with one couple {geoClassName, geoClassCode}
     public String addSection(String secName, String geoName, String geoCode) {
-        // Exeption
         if (sectionRepository.findByName(secName).size() != 0) {
             throw new UnprocException("! Section with this name is already exist !");
         }
@@ -61,7 +58,6 @@ public class SectionService {
         
     // Delete one record by ID    
     public void delete(Integer id) {
-        // Exeption
         if (sectionRepository.findOne(id) == null) {
             throw new NotFoundException("! Section with this ID can not be deleted because is not found !");
         }
@@ -71,7 +67,6 @@ public class SectionService {
     // Delete all sections with geoClasses  
     public void deleteAll() {
         Iterable<Section> sections = sectionRepository.findAll();
-        // Exeption
         if (sections.toString().equals("[]")) {
             throw new NotFoundException("! No any section found (DB is empty) !");
         }
