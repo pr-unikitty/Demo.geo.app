@@ -14,8 +14,10 @@ public class Section implements Serializable {
     @GeneratedValue(strategy=GenerationType.AUTO)
     @Column(name = "section_id")
     private Integer id;
+    
     @Expose
     private String name;
+    
     @Expose
     @JsonBackReference
     @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
