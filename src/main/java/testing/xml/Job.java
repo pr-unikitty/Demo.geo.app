@@ -16,6 +16,7 @@ public class Job implements Serializable {
     
     @Enumerated(EnumType.STRING)
     private JType type;
+    
     @Enumerated(EnumType.STRING)
     private JStatus status;
 
