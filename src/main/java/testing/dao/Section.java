@@ -56,12 +56,4 @@ public class Section implements Serializable {
         return this;
     }
     
-    //toDEBUG
-    public void print() {
-        System.out.println(this.name);
-        System.out.println("size = " + this.geologicalClasses.size());
-        for (GeologicalClass row : this.geologicalClasses) {
-            System.out.println(row.toString());
-        }
-    }
 }
