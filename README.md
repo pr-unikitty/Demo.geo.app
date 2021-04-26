@@ -36,13 +36,13 @@ Technology stack: Spring, Hipernate, SpringBoot, SpringData, ApachePOI, Gradle
   1.3. GET "/sections"   
        - show all records in DB   
 
-  1.4. DEL "/delete" with required field _id_   
+  1.4. DEL "/sections/{id}"   
        - delete one record from DB  
 
-  1.5. DEL "/deleteAll"  
+  1.5. DEL "/sections"  
        - delete all records in DB  
 
-  1.6. PUT "/addGeoclass" with required fields _section_, _geoClassName_ and _geoClassCode_   
+  1.6. PUT "/sections/{id}" with required fields _geoClassName_ and _geoClassCode_   
        - add new geoClass with the specified name and code to section   
 
   2.1. GET "/sections/by-code" with required field _code_   
