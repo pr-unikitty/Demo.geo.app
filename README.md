@@ -43,7 +43,7 @@ Technology stack: Spring, Hipernate, SpringBoot, SpringData, ApachePOI, Gradle
        - delete all records in DB  
 
   1.6. PUT "/sections/{id}" with required fields _geoClassName_ and _geoClassCode_   
-or
+or   
   1.7. POST "/sections/{id}/geoclasses"   
        - add new geoClass with the specified name and code to section   
 
