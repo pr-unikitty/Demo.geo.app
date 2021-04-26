@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 // Subclass for GeologicalClasses like {“name”:“Geo Class 11”,”code”:“GC11”}
 @Entity
+@Table(name="geoclasses")
 public class GeologicalClass implements Serializable {
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
@@ -19,6 +20,7 @@ public class GeologicalClass implements Serializable {
     private String name;
     
     @Expose
+    @Column(name="code")
     private String code;
     
     @JsonManagedReference
@@ -46,8 +48,4 @@ public class GeologicalClass implements Serializable {
         return this.section;
     }
     
-    @Override
-    public String toString() {
-        return this.name + " " + this.code;
-    }
 }

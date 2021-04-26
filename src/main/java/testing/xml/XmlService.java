@@ -1,5 +1,8 @@
 package testing.xml;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import testing.exceptions.*;
 import testing.dao.*;
 
@@ -12,8 +15,12 @@ import org.apache.poi.hssf.usermodel.*;
 import java.util.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.core.io.UrlResource;
+import org.springframework.web.multipart.MultipartFile;
 
 
 
@@ -24,11 +31,11 @@ public class XmlService {
     private SectionRepository sectionRepository;
     @Autowired
     private JobRepository jobRepository;
-    @Autowired
-    private XmlDataBase xmlDBService;
 
+    String tomCatDir = System.getProperty("catalina.home");
     
-    // Starting new job
+    // For TZ#3: /import OR /export
+    // Starting new job with status "IN_PROGRESS"
     public Job startJob(JType jobType) {
         Job newJob = new Job(jobType);
         newJob.setStatus(JStatus.IN_PROGRESS);
@@ -37,32 +44,21 @@ public class XmlService {
         return newJob;
     }
 
-    // Fore TZ#3: /export/id
+    // For TZ#3: /export/id
     // Returns result of processing by JobID ("DONE", "IN PROGRESS", "ERROR") 
-    public JStatus getJobStatus(Integer jobId) {
+    public String getJobStatus(Integer jobId) {
         Job job = jobRepository.findOne(jobId);
-        // Exeption
         if (job == null) {
             throw new NotFoundException("! Job with this ID is not found !");
         }
-        return job.getStatus();
-    }
-    
-    // For TZ#3: /export/id/file
-    // !name of file is obtained by: id.xls 
-    public Resource downloadXLSFile(Integer id) {
-        if (getJobStatus(id).equals(JStatus.DONE)) {
-            return xmlDBService.loadResource(id.toString() + ".xls");
-        }
-        if (getJobStatus(id).equals(JStatus.IN_PROGRESS)) {
-            throw new ExportInProcessException("! Export is still in process !");
-        }
-        throw new ExportErrorException("! Export job ended with error !");
+        return "{ \"Job status\" : \"" + job.getStatus().toString() + "\"}";
     }
 
     // For TZ#3: /export
+    // Launches exporting file (to local tmp dir of TomCat on the server)
+    // transmiting the file is carried out due to GET: /export/id/file
     @Async
-    public void exportXLS(Job job) {
+    public void generateXLS(Job job) {
         try {
             job.setStatus(JStatus.IN_PROGRESS);
             Iterable<Section> sections = sectionRepository.findAll();
@@ -89,8 +85,8 @@ public class XmlService {
                 }
             }
             // Finish writing a file
-            String exportFileName = job.getId().toString() + ".xls";
-            xmlDBService.storeExportFile(book, exportFileName);
+            String exportFileName = tomCatDir + File.separator + job.getId().toString() + ".xls";
+            book.write(new FileOutputStream(exportFileName));
             job.setStatus(JStatus.DONE);
             jobRepository.save(job);
 
@@ -100,15 +96,48 @@ public class XmlService {
         }
     }
     
-    // Fore TZ#3: /import
+    // For TZ#3: /export/id/file
+    // !name of file is obtained by: id.xls 
+    public Resource exportXLS(Integer id) throws MalformedURLException {
+        JStatus status = jobRepository.findOne(id).getStatus();
+        if (status.equals(JStatus.DONE)) {
+            String fileName = tomCatDir + File.separator + id.toString() + ".xls";
+            Resource resource = new UrlResource(Paths.get(fileName).resolve(fileName).normalize().toUri());
+            if(resource.exists()) {
+                return resource;
+            } else {
+                throw new NotFoundException("File " + fileName + " is not found.");
+            }
+        }
+        if (status.equals(JStatus.IN_PROGRESS)) {
+            throw new ExportInProcessException("! Export is still in process !");
+        }
+        throw new ExportErrorException("! Export job ended with error !");
+    }
+    
+    // For TZ#3: /import
+    // load user file and save it to temp.local dir with name as JobID.xls
     // !import add any records, even it's already exists in DB
     @Async
-    public void importXLS(InputStream inputStream, Job job, String importFileName) {
+    public File importXLS(Job job, MultipartFile file) throws IOException {
+        byte[] fileBytes = file.getBytes();
+        String fileName = job.getId().toString() + ".xls";
+        File newFile = new File(tomCatDir + File.separator + fileName);
+        try (BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(newFile))) {
+            stream.write(fileBytes);
+        }
+        //System.out.println("File is saved under: " + tomCatDir + File.separator + file.getOriginalFilename());
+        return newFile;
+    }
+    
+    // For TZ#3: /import
+    // Read uploaded user file and parse it as XML book
+    @Async
+    public void parseXLS(InputStream inputStream, Job job) {
         try {
             HSSFWorkbook xlsFile = new HSSFWorkbook(inputStream);
             inputStream.close();
-            // Read header
-            HSSFSheet sheet = xlsFile.getSheetAt(0);
+            HSSFSheet sheet = xlsFile.getSheetAt(0); // header
             // Read body
             for (int i = 1; i < sheet.getPhysicalNumberOfRows(); i++) {
                 // Read string
@@ -134,7 +163,6 @@ public class XmlService {
             }
             job.setStatus(JStatus.DONE);
             jobRepository.save(job);
-
         } catch (IOException e) {
             job.setStatus(JStatus.ERROR);
             jobRepository.save(job);
@@ -148,7 +176,7 @@ public class XmlService {
     }
     
     // Auxiliary func for reading geoClassName or geoClassCode from HSSF cell
-private String readCell (HSSFRow currentRow, int cellNum) {
+    private String readCell (HSSFRow currentRow, int cellNum) {
         HSSFCell geoNameCell = currentRow.getCell(cellNum);
         if(geoNameCell == null) {
             return null;

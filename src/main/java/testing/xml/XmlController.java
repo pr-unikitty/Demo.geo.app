@@ -8,6 +8,8 @@ import org.springframework.core.io.Resource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import org.springframework.web.multipart.MultipartFile;
 
 
 
@@ -18,27 +20,25 @@ public class XmlController {
     @Autowired
     private JobRepository jobRepository;
     @Autowired
-    private XmlDataBase xmlDataService;
-    @Autowired
     private XmlService xmlService;
+    
+    String tomCatDir = System.getProperty("catalina.home");
     
     // Returns ID of the Async Job and launches exporting
     @GetMapping("/export")
     public String exportSections() {
-        // Exeption
         Iterable<Section> sections = sectionRepository.findAll();
         if (sections.toString().equals("[]")) {
             throw new NotFoundException("! No any section found (DB is empty) !");
         }
         Job job = xmlService.startJob(JType.EXPORT);
-        xmlService.exportXLS(job);
-        throw new OkException("Job with ID=[" + job.getId().toString() + "] started sucsessfully");
+        xmlService.generateXLS(job);
+        return "{ \"Job ID\" : " + job.getId().toString() + "}";
     }
     
     // Returns result of parsed file by Job ID
     @GetMapping("/export/{id}")
     public String getExportStatus(@PathVariable Integer id) {
-        // Exeption
         Job job = jobRepository.findOne(id);
         if (job == null) {
             throw new NotFoundException("! Job with this ID is not found !");
@@ -49,15 +49,12 @@ public class XmlController {
         if (job.getType().equals(JType.IMPORT)) {
             throw new UnprocException("! Job type with this ID is not [export]!");
         }
-        String jobId = job.getId().toString();
-        String jobStatus = xmlService.getJobStatus(id).toString();
-        throw new OkException("Status of Job with ID=[" + jobId + "] is [" + jobStatus + "]");
+        return xmlService.getJobStatus(id).toString();
     }
     
     // Returns a file by Job ID
     @GetMapping(value = "/export/{id}/file")
-    public Resource getXLSFileByJobId(@PathVariable Integer id) {
-        // Exeption
+    public Resource getXLSFileByJobId(@PathVariable Integer id) throws MalformedURLException {
         Job job = jobRepository.findOne(id);
         if (job == null) {
             throw new NotFoundException("! Job with this ID is not found !");
@@ -68,25 +65,27 @@ public class XmlController {
         if (job.getType().equals(JType.IMPORT)) {
             throw new UnprocException("! Job type with this ID is not [export]!");
         }
-        Resource resource = xmlService.downloadXLSFile(id);
+        Resource resource = xmlService.exportXLS(id);
         return resource;
     }
     
+    
     // Returns ID of the Async Job and launches importing
     @PostMapping(value = "/import")
-    public String importXLS(@RequestParam("file") File file) throws IOException {
-        Job job = xmlService.startJob(JType.IMPORT);
-        String fileName = job.getId().toString() + ".xls";
-        xmlDataService.storeImportFile(new FileInputStream(file), fileName);
-        xmlService.importXLS(new FileInputStream(file), job, fileName);
-        throw new OkException("Job with ID=[" + job.getId().toString() + "] started sucsessfully");
-
+    public String handleFileUpload(@RequestParam("file") MultipartFile file) throws IOException {
+        if (!file.isEmpty()) {
+            Job job = xmlService.startJob(JType.IMPORT);
+            File newFile = xmlService.importXLS(job, file);
+            xmlService.parseXLS(new FileInputStream(newFile), job);
+            return "{ \"Job ID\" : " + job.getId().toString() + "}";
+        } else {
+            throw new UnprocException ("! File upload is failed: File is empty !");
+        }
     }
     
     // Returns result of importing by Job ID
     @GetMapping("/import/{id}")
     public String getImportStatus(@PathVariable Integer id) {
-        // Exeption
         Job job = jobRepository.findOne(id);
         if (job == null) {
             throw new NotFoundException("! Job with this ID is not found !");
@@ -97,7 +96,6 @@ public class XmlController {
         if (job.getType().equals(JType.EXPORT)) {
             throw new UnprocException("! Job type with this ID is not [import]!");
         }
-        throw new OkException("Status of Job with ID=[" + job.getId().toString() + 
-                "] is [" + xmlService.getJobStatus(id).toString() + "]");
+        return xmlService.getJobStatus(id).toString();
     }
 }

@@ -14,8 +14,6 @@ public class SectionService {
     
     @Autowired
     private SectionRepository sectionRepository;
-    @Autowired
-    private GeologicalClassRepository geoRepository;
     
     // Find one section by id and return info in correct form without id;
     // simple method show ArrayList as mem's address
@@ -77,38 +75,49 @@ public class SectionService {
     }
     
     // Add geoClass to Section
-    public String addGeoclass(String secName, String geoName, String geoCode) {
-        Iterable<Section> sections = sectionRepository.findAll();
-        for (Section sec : sections) {
-            if (sec.getName().equals(secName) == true) {
-                // Check existing class with this name in existing section
-                List<GeologicalClass> geoClasses = sec.getGeologicalClasses();
-                for (GeologicalClass geoClass : geoClasses) {
-                    // Exceptions
-                    if (geoClass.getName().equals(geoName)) {
-                        throw new UnprocException("! GeologicalClass witn this Name already exists in this Section!");
-                    }
-                    if (geoClass.getCode().equals(geoCode)) {
-                        throw new UnprocException("! GeologicalClass witn this Code already exists in this Section!");
-                    }
-                } 
-                // If geo is not exists, add to existing sec
-                sec.addGeoClass(new GeologicalClass(sec, geoName, geoCode));
-                sectionRepository.save(sec);
-                throw new OkException("Section updated sucseccfully (GeologicalClass added in existing Section)");
-            } 
+    public String addGeoclass(Integer id, String geoName, String geoCode) {
+        Section sections = sectionRepository.findOne(id);
+        if (sections == null) {
+            throw new NotFoundException("! Section with this ID do not exists !");
         }
-        // if section with this name is not exist, new one
-        Section section = new Section(secName);
-        GeologicalClass geoClass = new GeologicalClass(section, geoName, geoCode);
-        section.addGeoClass(geoClass);
-        sectionRepository.save(section);
-        throw new OkException("Section created sucseccfully (GeologicalClass added in new Section)");
+        // Check existing class with this name in existing section
+        List<GeologicalClass> geoClasses = sections.getGeologicalClasses();
+        for (GeologicalClass geoClass : geoClasses) {
+            // Exceptions
+            if (geoClass.getName().equals(geoName)) {
+                throw new UnprocException("! GeologicalClass witn this Name already exists in this Section!");
+            }
+            if (geoClass.getCode().equals(geoCode)) {
+                throw new UnprocException("! GeologicalClass witn this Code already exists in this Section!");
+            }
+        } 
+        // If geo is not exists, add to existing sec
+        sections.addGeoClass(new GeologicalClass(sections, geoName, geoCode));
+        sectionRepository.save(sections);
+        throw new OkException("Section updated sucseccfully (GeologicalClass added in existing Section)");
     }
     
     // Returns a list of all Sections that have geologicalClasses with the specified code
     // TZ#2
-    public String findSectionsByGeoCode (String geoCode) {
+    public String findSectionsByGeologicalCode (String geoCode) {
+        List<Section> neededSections = sectionRepository.findSectionsByGeoCode(geoCode);
+        // Exeption
+        if (neededSections.toString().equals("[]")) {
+            throw new NotFoundException("! No any section found !");
+        }
+        // List to JSON format
+        String output = "{";
+        for (Section sec : neededSections) {
+            output += findOneToJSON(sec.getId());
+        }
+        output += "}";
+        return output;
+    }
+    /*
+    *
+    *  Non-optimal method, required separate class GeologicalClassRepository
+    *
+    public String findSectionsByGeologicalCode (String geoCode) {
         List<Section> neededSections = new ArrayList<>();
         Iterable<GeologicalClass> geoClasses = geoRepository.findAll();
         for (GeologicalClass geoClass : geoClasses) {
@@ -128,4 +137,5 @@ public class SectionService {
         output += "}";
         return output;
     }
+    */
 }

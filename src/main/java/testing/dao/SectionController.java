@@ -4,6 +4,7 @@ import testing.exceptions.OkException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import testing.exceptions.*;
 
 @RestController
 public class SectionController {
@@ -18,16 +19,30 @@ public class SectionController {
     }
     
     // Add Section with one geoClass
-    @PostMapping("/add")
+    // initial version was ("/add")
+    @PostMapping("/sections")
     public String add(@RequestParam(value = "section", required = true) String secName, 
             @RequestParam(value = "geoClassName", required = true) String geoName, 
             @RequestParam(value = "geoClassCode", required = true) String geoCode) {
-       return sectionService.addSection(secName, geoName, geoCode);
+        if (secName.equals("") || geoName.equals("") || geoCode.equals("")) {
+            throw new BadRequestException("! No one argument can be empty !");
+        }
+        return sectionService.addSection(secName, geoName, geoCode);
+    }
+    
+    // Add new geoClass to existing Section (as POST-req to Geoclasses resource)
+    @PostMapping("/sections/{id}/geoclasses")
+    public String addGeoClassPost(@PathVariable Integer id, 
+            @RequestParam(value = "geoClassName", required = true) String geoName, 
+            @RequestParam(value = "geoClassCode", required = true) String geoCode) {
+        if (geoName.equals("") || geoCode.equals("")) {
+            throw new BadRequestException("! No one argument can be empty !");
+        }
+        return sectionService.addGeoclass(id, geoName, geoCode);
     }
     
     // Find one section by ID and return info
     // initial version was ("/findById")
-    // initial version was public String findById(@RequestParam(value = "id", required = true) Integer id) 
     @GetMapping("/sections/{id}")
     public String findById(@PathVariable Integer id) 
             throws JsonProcessingException {
@@ -41,33 +56,41 @@ public class SectionController {
        return sectionService.findAllToJSON();
     }
     
-    // Delete one record by ID as GET request
-    @DeleteMapping("/delete")
-    public void delete(@RequestParam(value = "id", required = true) Integer id) {
+    // Delete one record by ID
+    // initial version was ("/delete")
+    @DeleteMapping("/sections/{id}")
+    public void delete(@PathVariable Integer id) {
         sectionService.delete(id);
        throw new OkException("Section deleted sucseccfully");
     }
     
     // Delete all records
-    @DeleteMapping("/deleteAll")
+    // initial version was ("/deleteAll")
+    @DeleteMapping("/sections")
     public void deleteAll() {
         sectionService.deleteAll();
        throw new OkException("All sections deleted sucseccfully");
     }
 
-    // Add geoClass to Section
-    @PutMapping("/addGeoclass")
-    public void addGeoClass(@RequestParam(value = "section", required = true) String section,
+    // Add geoClass to Section (as PUT-req to Section resource)
+    // initial version was ("/addGeoclass")
+    @PutMapping("/sections/{id}")
+    public void addGeoClass(@PathVariable Integer id,
             @RequestParam(value = "geoName", required = true) String geoName,
             @RequestParam(value = "geoCode", required = true) String geoCode ) {
-        sectionService.addGeoclass(section, geoName, geoCode);
+        sectionService.addGeoclass(id, geoName, geoCode);
     }
  
     // Returns a list of all Sections that have geologicalClasses with the specified code
+    // using JPQL
     // TZ#2
     @GetMapping("/sections/by-code")
     public String findByCode(@RequestParam(value = "code", required = true) String geoCode) 
             throws JsonProcessingException {
-        return sectionService.findSectionsByGeoCode(geoCode);
+        if (geoCode.equals("")) {
+            throw new BadRequestException("! Argument must not be empty !");
+        }
+        return sectionService.findSectionsByGeologicalCode(geoCode);
     }
+
 }
