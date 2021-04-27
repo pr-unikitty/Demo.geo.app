@@ -6,9 +6,6 @@ import javax.persistence.*;
 import com.google.gson.annotations.Expose;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-
-
-// Subclass for GeologicalClasses like {“name”:“Geo Class 11”,”code”:“GC11”}
 @Entity
 @Table(name="geoclasses")
 public class GeologicalClass implements Serializable {
