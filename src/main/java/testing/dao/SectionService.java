@@ -113,29 +113,4 @@ public class SectionService {
         output += "}";
         return output;
     }
-    /*
-    *
-    *  Non-optimal method, required separate class GeologicalClassRepository
-    *
-    public String findSectionsByGeologicalCode (String geoCode) {
-        List<Section> neededSections = new ArrayList<>();
-        Iterable<GeologicalClass> geoClasses = geoRepository.findAll();
-        for (GeologicalClass geoClass : geoClasses) {
-            if (geoClass.getCode().equals(geoCode)) {
-                neededSections.add(geoClass.getSection());
-            }
-        }
-        // Exeption
-        if (neededSections.toString().equals("[]")) {
-            throw new NotFoundException("! No any section found !");
-        }
-        // List to JSON format
-        String output = "{";
-        for (Section sec : neededSections) {
-            output += findOneToJSON(sec.getId());
-        }
-        output += "}";
-        return output;
-    }
-    */
 }
