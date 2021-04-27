@@ -6,7 +6,6 @@ import com.google.gson.annotations.Expose;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import java.util.*;
 
-// Main class
 @Entity
 public class Section implements Serializable {
 
