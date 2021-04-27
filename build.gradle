@@ -45,6 +45,8 @@ dependencies {
     // ApachPOI
     'org.apache.poi:poi:3.12',
     'org.apache.poi:poi-ooxml:3.12',
+    // Tests
+    'org.springframework.boot:spring-boot-starter-test'
     )
     
     testCompile("junit:junit")
