@@ -19,7 +19,6 @@ public class SectionController {
     }
     
     // Add Section with one geoClass
-    // initial version was ("/add")
     @PostMapping("/sections")
     public String add(@RequestParam(value = "section", required = true) String secName, 
             @RequestParam(value = "geoClassName", required = true) String geoName, 
@@ -42,7 +41,6 @@ public class SectionController {
     }
     
     // Find one section by ID and return info
-    // initial version was ("/findById")
     @GetMapping("/sections/{id}")
     public String findById(@PathVariable Integer id) 
             throws JsonProcessingException {
@@ -50,14 +48,12 @@ public class SectionController {
     }
     
     // Find all records in DB
-    // initial version was ("showAll")
     @GetMapping("/sections")
     public String findAll() {
        return sectionService.findAllToJSON();
     }
     
     // Delete one record by ID
-    // initial version was ("/delete")
     @DeleteMapping("/sections/{id}")
     public void delete(@PathVariable Integer id) {
         sectionService.delete(id);
@@ -65,7 +61,6 @@ public class SectionController {
     }
     
     // Delete all records
-    // initial version was ("/deleteAll")
     @DeleteMapping("/sections")
     public void deleteAll() {
         sectionService.deleteAll();
@@ -73,7 +68,6 @@ public class SectionController {
     }
 
     // Add geoClass to Section (as PUT-req to Section resource)
-    // initial version was ("/addGeoclass")
     @PutMapping("/sections/{id}")
     public void addGeoClass(@PathVariable Integer id,
             @RequestParam(value = "geoName", required = true) String geoName,
