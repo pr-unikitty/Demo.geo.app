@@ -1,57 +1,129 @@
 package testing.dao;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.junit4.SpringRunner;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import org.junit.runner.RunWith;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.*;
+import org.springframework.test.context.ContextConfiguration;
+import testing.Application;
 
-public class SectionTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+@ContextConfiguration(classes = {SectionController.class, Application.class})
+public class SectionControllerTest {
+
+    @Autowired
+    private TestRestTemplate restTemplate;
+
+    @Autowired
+    private SectionRepository repository;
     
-    public SectionTest() {
-    }
-
-    /**
-     * Test of getName method, of class Section.
-     */
-    @Test
-    public void testGetName() {
-        System.out.println("getName");
-        Section instance = new Section("section1");
-        String expResult = "section1";
-        String result = instance.getName();
-        assertEquals(expResult, result);
-    }
-    
-    /**
-     * Test of addGeoClass and getGeologicalClasses methods, of class Section.
-     */
-    @Test
-    public void testAddGeoClassAndGetGeologicalClasses() {
-        System.out.println("addGeoClass & getGeologicalClasses");
-        Section sec = new Section("section2");
-        GeologicalClass geo = new GeologicalClass(sec,"geoName1","geoCode1");
-        List<GeologicalClass> expResult = new ArrayList();
-        expResult.add(geo);
-        sec.addGeoClass(geo);
-        List<GeologicalClass> result = sec.getGeologicalClasses();
-        assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of addListOfGeoClasses method, of class Section.
-     */
-    @Test
-    public void testAddListOfGeoClasses() {
-        System.out.println("addListOfGeoClasses");
-        Section sec = new Section("section3");
-        GeologicalClass geo1 = new GeologicalClass(sec,"geoName1","geoCode1");
-        GeologicalClass geo2 = new GeologicalClass(sec,"geoName2","geoCode2");
-        List<GeologicalClass> geos = new ArrayList();
-        geos.add(geo1);
-        geos.add(geo2);
-        sec.addListOfGeoClasses(geos);
-        List<GeologicalClass> result = sec.getGeologicalClasses();
-        assertEquals(geos, result);
+    @Before
+    public void setDb() {
+        Section section = new Section("Section1");
+        GeologicalClass geo = new GeologicalClass(section, "GeoClass11", "GC11");
+        section.addGeoClass(geo);
+        repository.save(section);
     }
     
+    @After
+    public void resetDb() {
+        repository.deleteAll();
+    }
+        
+    @Test
+    public void whenCreateSection() {
+
+        Section section = new Section();
+        
+        String resp = "/sections?section=Section2&geoClassName=GeoClass11&geoClassCode=GC11";
+        ResponseEntity<Section> response = restTemplate.postForEntity(resp, section, Section.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getBody().getName(), is("Section2"));
+        System.out.println("POST sections");
+    }
+    
+    @Test
+    public void whenBadCreateSimilarSection() {
+
+        Section section = new Section();
+        
+        String resp = "/sections?section=Section1&geoClassName=GeoClass11&geoClassCode=GC11";
+        ResponseEntity<Section> response = restTemplate.postForEntity(resp, section, Section.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.UNPROCESSABLE_ENTITY));
+        System.out.println("POST sections");
+    }
+    
+    @Test
+    public void whenBadCreateSectionWithoutParams() {
+
+        System.out.println("BAD POST sections");
+        Section section = new Section();
+        
+        String resp = "/sections";
+        ResponseEntity<Section> response = restTemplate.postForEntity(resp, section, Section.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        
+        resp = "/sections?section=Section1";
+        response = restTemplate.postForEntity(resp, section, Section.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        
+        resp = "/sections?section=Section1&geoClassName=GeoClass11";
+        response = restTemplate.postForEntity(resp, section, Section.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        
+        resp = "/sections?section=Section1&geoClassCode=GC11";
+        response = restTemplate.postForEntity(resp, section, Section.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+    }
+    
+    @Test
+    public void whenGetSections() {
+
+        System.out.println("GET sections");
+                
+        ResponseEntity<Section> response = restTemplate.getForEntity("/sections", Section.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getBody().getName(), is("Section1"));
+    }
+    
+    @Test
+    public void whenBadGetSection() {
+
+        System.out.println("BAD GET sections");
+        String resp = "/sections/{id}";
+        ResponseEntity<Section> response = restTemplate.getForEntity(resp, Section.class,2);
+        assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
+    }
+    
+    @Test
+    public void whenDeleteSections() {
+
+        System.out.println("DEL sections");
+        ResponseEntity<Section> response = restTemplate.exchange("/sections", HttpMethod.DELETE, null, Section.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        
+        response = restTemplate.getForEntity("/sections", Section.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
+    }
+    
+    @Test
+    public void whenGetSectionsByCode() {
+
+        System.out.println("GET by-code");
+                
+        String resp = "/sections/by-code?code=GC11";
+        ResponseEntity<Section> response = restTemplate.getForEntity(resp, Section.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getBody().getName(), is("Section1"));
+    }
 }
