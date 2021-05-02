@@ -1,75 +1,129 @@
 package testing.dao;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.junit.*;
-import org.junit.runner.RunWith;
-import static org.mockito.BDDMockito.*;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import testing.Application;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.junit4.SpringRunner;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import org.junit.runner.RunWith;
+import org.junit.Test;
+import org.junit.*;
+import org.springframework.test.context.ContextConfiguration;
+import testing.Application;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(Application.class)
-@ContextConfiguration(classes = SectionController.class)
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+@ContextConfiguration(classes = {SectionController.class, Application.class})
 public class SectionControllerTest {
-    
-    @MockBean
-    private SectionRepository sectionRepository;
 
-    @MockBean
-    private SectionService sectionService;
-    
     @Autowired
-    private MockMvc mockMvc;
+    private TestRestTemplate restTemplate;
 
-    public SectionControllerTest() {
+    @Autowired
+    private SectionRepository repository;
+    
+    @Before
+    public void setDb() {
+        Section section = new Section("Section1");
+        GeologicalClass geo = new GeologicalClass(section, "GeoClass11", "GC11");
+        section.addGeoClass(geo);
+        repository.save(section);
     }
-
-    @Test
-    public void findAllSections() throws Exception {
+    
+    @After
+    public void resetDb() {
+        repository.deleteAll();
+    }
         
-        Section sec1 = new Section("section1");
-        GeologicalClass geoClass = new GeologicalClass(sec1, "geoName", "geoCode");
-        sec1.addGeoClass(geoClass);
-        sectionRepository.save(sec1);
-        Section sec2 = new Section("section2");
-        sec2.addGeoClass(geoClass);
-        sectionRepository.save(sec2);
+    @Test
+    public void whenCreateSection() {
+
+        Section section = new Section();
+        
+        String resp = "/sections?section=Section2&geoClassName=GeoClass11&geoClassCode=GC11";
+        ResponseEntity<Section> response = restTemplate.postForEntity(resp, section, Section.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getBody().getName(), is("Section2"));
+        System.out.println("POST sections");
+    }
+    
+    @Test
+    public void whenBadCreateSimilarSection() {
+
+        Section section = new Section();
+        
+        String resp = "/sections?section=Section1&geoClassName=GeoClass11&geoClassCode=GC11";
+        ResponseEntity<Section> response = restTemplate.postForEntity(resp, section, Section.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.UNPROCESSABLE_ENTITY));
+        System.out.println("POST sections");
+    }
+    
+    @Test
+    public void whenBadCreateSectionWithoutParams() {
+
+        System.out.println("BAD POST sections");
+        Section section = new Section();
+        
+        String resp = "/sections";
+        ResponseEntity<Section> response = restTemplate.postForEntity(resp, section, Section.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        
+        resp = "/sections?section=Section1";
+        response = restTemplate.postForEntity(resp, section, Section.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        
+        resp = "/sections?section=Section1&geoClassName=GeoClass11";
+        response = restTemplate.postForEntity(resp, section, Section.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+        
+        resp = "/sections?section=Section1&geoClassCode=GC11";
+        response = restTemplate.postForEntity(resp, section, Section.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+    }
+    
+    @Test
+    public void whenGetSections() {
+
+        System.out.println("GET sections");
                 
-        List<Section> secs = new ArrayList();
-        secs.add(sec1);
-        secs.add(sec2);
-        given(sectionRepository.findAll()).willReturn(secs);
-
-        mockMvc.perform(get("/sections")
-          .contentType(MediaType.APPLICATION_JSON))
-          .andExpect(status().isOk())
-          .andReturn().getResponse().getContentAsString().equals(sec1.getName());
+        ResponseEntity<Section> response = restTemplate.getForEntity("/sections", Section.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getBody().getName(), is("Section1"));
     }
-
+    
     @Test
-    public void findOneSection() throws Exception {
-        
-        Section sec1 = new Section("section1");
-        GeologicalClass geoClass = new GeologicalClass(sec1, "geoName", "geoCode");
-        sec1.addGeoClass(geoClass);
-        sectionRepository.save(sec1);
-        List<Section> secs = Arrays.asList(sec1);
-        given(sectionRepository.findAll()).willReturn(secs);
+    public void whenBadGetSection() {
 
-        mockMvc.perform(get("/sections/1")
-          .contentType(MediaType.APPLICATION_JSON))
-          .andExpect(status().isOk())
-          .andReturn().getResponse().getContentAsString().equals(sec1.getName());
+        System.out.println("BAD GET sections");
+        String resp = "/sections/{id}";
+        ResponseEntity<Section> response = restTemplate.getForEntity(resp, Section.class,2);
+        assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
+    }
+    
+    @Test
+    public void whenDeleteSections() {
+
+        System.out.println("DEL sections");
+        ResponseEntity<Section> response = restTemplate.exchange("/sections", HttpMethod.DELETE, null, Section.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        
+        response = restTemplate.getForEntity("/sections", Section.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
+    }
+    
+    @Test
+    public void whenGetSectionsByCode() {
+
+        System.out.println("GET by-code");
+                
+        String resp = "/sections/by-code?code=GC11";
+        ResponseEntity<Section> response = restTemplate.getForEntity(resp, Section.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getBody().getName(), is("Section1"));
     }
 }
