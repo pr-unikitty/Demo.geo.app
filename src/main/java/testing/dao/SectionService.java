@@ -16,7 +16,7 @@ public class SectionService {
     private SectionRepository sectionRepository;
     
     // Find one section by id and return info in correct form without id;
-    // simple method show ArrayList as mem's address
+    // simple method shows ArrayList as mem's address
     public String findOneToJSON(Integer id) {
         Section section = sectionRepository.findOne(id);
         if (section == null) 
@@ -33,12 +33,10 @@ public class SectionService {
         if (sections.toString().equals("[]")) {
             throw new NotFoundException("! No any section found (DB is empty) !");
         }
-        // Concatenation with general "{" and "}" to list of each record
-        String output = "{";
+        String output = "";
         for (Section sec : sections) {
             output += findOneToJSON(sec.getId());
         }
-        output += "}";
         return output;
     }
     
@@ -106,11 +104,10 @@ public class SectionService {
             throw new NotFoundException("! No any section found !");
         }
         // List to JSON format
-        String output = "{";
+        String output = "";
         for (Section sec : neededSections) {
             output += findOneToJSON(sec.getId());
         }
-        output += "}";
         return output;
     }
     /*
