@@ -1,7 +1,10 @@
-package testing.xls;
+package geo.app.xls;
 
-import testing.dao.*;
-import testing.exceptions.*;
+import geo.app.exceptions.UnprocException;
+import geo.app.exceptions.BadRequestException;
+import geo.app.exceptions.NotFoundException;
+import geo.app.dao.SectionRepository;
+import geo.app.model.Section;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;

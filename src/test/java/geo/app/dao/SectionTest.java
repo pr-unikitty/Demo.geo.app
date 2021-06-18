@@ -1,5 +1,7 @@
-package testing.dao;
+package geo.app.dao;
 
+import geo.app.model.GeologicalClass;
+import geo.app.model.Section;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;

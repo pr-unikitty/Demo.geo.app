@@ -1,5 +1,10 @@
-package testing.dao;
+package geo.app.dao;
 
+import geo.app.dao.SectionRepository;
+import geo.app.dao.SectionController;
+import geo.app.model.GeologicalClass;
+import geo.app.model.Section;
+import geo.app.Application;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -14,7 +19,6 @@ import org.junit.runner.RunWith;
 import org.junit.Test;
 import org.junit.*;
 import org.springframework.test.context.ContextConfiguration;
-import testing.Application;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)

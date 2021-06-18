@@ -1,5 +1,6 @@
-package testing.dao;
+package geo.app.dao;
 
+import geo.app.model.Section;
 import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 import org.springframework.data.jpa.repository.Query;

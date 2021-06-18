@@ -1,5 +1,8 @@
-package testing.dao;
+package geo.app.dao;
 
+import geo.app.model.GeologicalClass;
+import geo.app.model.Section;
+import geo.app.Application;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

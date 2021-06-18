@@ -1,4 +1,4 @@
-package testing.exceptions;
+package geo.app.exceptions;
 
 
 import org.springframework.http.HttpStatus;

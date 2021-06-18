@@ -1,8 +1,10 @@
-package testing.dao;
+package geo.app.dao;
 
-import testing.exceptions.NotFoundException;
-import testing.exceptions.OkException;
-import testing.exceptions.UnprocException;
+import geo.app.model.GeologicalClass;
+import geo.app.model.Section;
+import geo.app.exceptions.NotFoundException;
+import geo.app.exceptions.OkException;
+import geo.app.exceptions.UnprocException;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.google.gson.Gson;

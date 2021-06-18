@@ -1,5 +1,6 @@
-package testing.dao;
+package geo.app.model;
 
+import geo.app.model.Section;
 import javax.persistence.Entity;
 import java.io.Serializable;
 import javax.persistence.*;

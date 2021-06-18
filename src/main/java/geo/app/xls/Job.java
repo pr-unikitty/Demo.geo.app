@@ -1,10 +1,10 @@
-package testing.xls;
+package geo.app.xls;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-enum JType {IMPORT, EXPORT }
+enum JType { IMPORT, EXPORT }
 enum JStatus { DONE, IN_PROGRESS, ERROR }
 
 @Entity

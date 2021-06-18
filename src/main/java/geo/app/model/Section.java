@@ -1,4 +1,4 @@
-package testing.dao;
+package geo.app.model;
 
 import java.io.Serializable;
 import javax.persistence.*;
@@ -24,13 +24,13 @@ public class Section implements Serializable {
     private List<GeologicalClass> geologicalClasses;
     
     // Default constructor 'cause JPA
-    protected Section() {}
+    public Section() {}
     // Own constructor
     public Section(String secName) {
         this.name = secName;
         this.geologicalClasses = new ArrayList<GeologicalClass>();
     }
-    
+
     // Getters
     public Integer getId() {
         return this.id;

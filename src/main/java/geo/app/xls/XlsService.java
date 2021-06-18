@@ -1,10 +1,14 @@
-package testing.xls;
+package geo.app.xls;
 
+import geo.app.exceptions.ExportInProcessException;
+import geo.app.exceptions.NotFoundException;
+import geo.app.exceptions.ExportErrorException;
+import geo.app.dao.SectionRepository;
+import geo.app.model.GeologicalClass;
+import geo.app.model.Section;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import testing.exceptions.*;
-import testing.dao.*;
 
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;

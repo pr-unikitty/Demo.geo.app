@@ -1,4 +1,4 @@
-package testing;
+package geo.app;
 
 
 import org.springframework.context.annotation.Configuration;

@@ -1,10 +1,10 @@
-package testing.dao;
+package geo.app.dao;
 
-import testing.exceptions.OkException;
+import geo.app.exceptions.BadRequestException;
+import geo.app.exceptions.OkException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import testing.exceptions.*;
 
 @RestController
 public class SectionController {
