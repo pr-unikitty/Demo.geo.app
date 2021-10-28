@@ -2,7 +2,7 @@ buildscript {
     repositories {
         mavenCentral()
         // sDATA
-        maven { url "http://repo.spring.io/libs-release" }
+        maven { url "https://repo.spring.io/libs-release" }
         mavenLocal()
     }
     dependencies {
@@ -11,7 +11,7 @@ buildscript {
 }
 
 apply plugin: 'java'
-apply plugin: 'org.springframework.boot'
+//apply plugin: 'org.springframework.boot'
 
 jar {
     baseName = 'spring-boot'
@@ -21,37 +21,34 @@ jar {
 repositories {
     mavenCentral()
     mavenLocal()
-    maven { url "http://repo.spring.io/libs-release" }
+    //maven { url "http://repo.spring.io/libs-release" }
     maven { url "https://repository.jboss.org/nexus/content/repositories/releases" }
 }
 
-bootRepackage {
-    enabled = true
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    // sDATA
+    implementation 'com.h2database:h2'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // JSON
+    implementation 'com.fasterxml.jackson.core:jackson-core'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations'
+    implementation 'com.google.code.gson:gson'
+    // ApachPOI
+    implementation 'org.apache.poi:poi:3.12'
+    implementation 'org.apache.poi:poi-ooxml:3.12'
+    // Tests
+    //implementation 'org.springframework.boot:spring-boot-starter-test'
+    
 }
 
-dependencies {
-    compile(\
-    'org.springframework.boot:spring-boot-starter',
-    'org.springframework.boot:spring-boot-starter-web',
-    'org.springframework.boot:spring-boot-starter-thymeleaf',
-    // sDATA
-    'com.h2database:h2',
-    'org.springframework.boot:spring-boot-starter-data-jpa',
-    // JSON
-    'com.fasterxml.jackson.core:jackson-core',
-    'com.fasterxml.jackson.core:jackson-databind',
-    'com.fasterxml.jackson.core:jackson-annotations',
-    'com.google.code.gson:gson',
-    // ApachPOI
-    'org.apache.poi:poi:3.12',
-    'org.apache.poi:poi-ooxml:3.12',
-    // Tests
-    'org.springframework.boot:spring-boot-starter-test'
-    )
-    
-    testCompile("junit:junit")
+test {
+    useJUnitPlatform()
 }
 
 if (!hasProperty('mainClass')) {
-    ext.mainClass = 'testing.Application'
+    ext.mainClass = 'geo.app.Application'
 }
