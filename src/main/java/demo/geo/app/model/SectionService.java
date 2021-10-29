@@ -10,9 +10,7 @@ import java.util.*;
 import demo.geo.app.entities.GeologicalClass;
 import demo.geo.app.entities.Section;
 import demo.geo.app.exceptions.NotFoundException;
-import demo.geo.app.exceptions.OkException;
 import demo.geo.app.exceptions.UnprocException;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SectionService {
@@ -68,14 +66,17 @@ public class SectionService {
         if (existingSection != null) {
             throw new UnprocException("! Section with this name is already exist !");
         }
-        Section newSection = new Section();
-        newSection.setName(section.getName());
-        //newSection.setGeologicalClasses(section.getGeologicalClasses());
-        //newSection.addGeoClass(new GeologicalClass(newSection.getId(), 
-        //        section.getGeologicalClasses().get(0).getName(), 
-        //        section.getGeologicalClasses().get(0).getCode()));
-         
-        return sectionRepository.save(newSection);
+        Section newSection = new Section(section.getName());
+        sectionRepository.save(newSection);
+        sectionRepository.flush();
+        List<GeologicalClass> geoClasses = section.getGeologicalClasses();
+        if (geoClasses != null) {
+            for (GeologicalClass newGeoClass : geoClasses) {
+                addGeoclass(newSection.getId(), newGeoClass);
+            }
+        }
+        sectionRepository.save(newSection);
+        return newSection;
     }
         
     // Delete one record by ID    
@@ -88,27 +89,24 @@ public class SectionService {
 
     // Delete all sections with geoClasses  
     public void deleteAll() {
-        Iterable<Section> sections = sectionRepository.findAll();
-        if (sections.toString().equals("[]")) {
+        List<Section> sections = sectionRepository.findAll();
+        if (sections.isEmpty()) {
             throw new NotFoundException("! No any section found (DB is empty) !");
         }
-        // Concatenation with general "{" and "}" to list of each record
         for (Section sec : sections) {
             sectionRepository.deleteById(sec.getId());
         }
     }
     
     // Add geoClass to Section
-    public String addGeoclass(long id, GeologicalClass geoClass) {
+    public Section addGeoclass(long id, GeologicalClass geoClass) {
         Section existingSection = sectionRepository.getById(id);
         if (existingSection == null) {
             throw new NotFoundException("! Section with this ID does not exists !");
         }
-        // Check existing class with this name in existing section
         List<GeologicalClass> geoClasses = existingSection.getGeologicalClasses();
         if (geoClasses != null) {
             for (GeologicalClass existingGeoClass : geoClasses) {
-                // Exceptions
                 if (existingGeoClass.getName().equals(geoClass.getName())) {
                     throw new UnprocException("! GeologicalClass witn this Name already exists in this Section!");
                 }
@@ -117,26 +115,15 @@ public class SectionService {
                 }
             } 
         }
-        // If geo is not exists, add to existing sec
         existingSection.addGeoClass(new GeologicalClass(existingSection.getId(), geoClass.getName(), geoClass.getCode()));
-        sectionRepository.save(existingSection);
-        throw new OkException("Section updated sucseccfully (GeologicalClass added in existing Section)");
+        return sectionRepository.save(existingSection);
     }
     
     // Returns a list of all Sections that have geologicalClasses with the specified code
     // TZ#2
-    public String findSectionsByGeologicalCode (String geoCode) {
+    public List<Section> findSectionsByGeologicalCode (String geoCode) {
         List<Section> neededSections = sectionRepository.findSectionsByGeoCode(geoCode);
-        // Exeption
-        if (neededSections.toString().equals("[]")) {
-            throw new NotFoundException("! No any section found !");
-        }
-        // List to JSON format
-        String output = "";
-        for (Section sec : neededSections) {
-            output += findOneToJSON(sec.getId());
-        }
-        return output;
+        return neededSections;
     }
 
 }

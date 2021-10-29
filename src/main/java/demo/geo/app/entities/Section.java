@@ -1,7 +1,5 @@
 package demo.geo.app.entities;
 
-import com.google.gson.annotations.Expose;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import java.io.Serializable;
 import javax.persistence.*;
@@ -14,14 +12,11 @@ public class Section implements Serializable {
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
     @Column(name = "section_id")
-    private long id;
+    private Long id;
     
-    //@Expose
     private String name;
     
-    //@Expose
-    //@JsonBackReference
-    @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<GeologicalClass> geologicalClasses;
     
     public Section() {
@@ -29,7 +24,7 @@ public class Section implements Serializable {
     
     public Section(String secName) {
         this.name = secName;
-        this.geologicalClasses = new ArrayList<GeologicalClass>();
+        this.geologicalClasses = new ArrayList<>();
     }
 
     public Section(String name, List<GeologicalClass> geologicalClasses) {
@@ -37,11 +32,11 @@ public class Section implements Serializable {
         this.geologicalClasses = geologicalClasses;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -62,15 +57,16 @@ public class Section implements Serializable {
     }
 
     // Add GeoClass to existing Section
-    public Section addGeoClass (GeologicalClass geo) {
+    public Section addGeoClass(GeologicalClass geo) {
         this.geologicalClasses.add(geo);
         return this;
     }
     
     // Add GeoClass to existing Section
-    public Section addListOfGeoClasses (List<GeologicalClass> geos) {
+    public Section addListOfGeoClasses(List<GeologicalClass> geos) {
         for (GeologicalClass geoClass : geos) {
-            this.geologicalClasses.add(geoClass);
+            this.geologicalClasses.add(
+                    geoClass);
         }
         return this;
     }

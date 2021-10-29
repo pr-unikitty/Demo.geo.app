@@ -1,9 +1,6 @@
 package demo.geo.app.entities;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.gson.annotations.Expose;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.Entity;
 import java.io.Serializable;
@@ -18,37 +15,35 @@ import javax.persistence.*;
 public class GeologicalClass implements Serializable {
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
-    private Integer id;
+    private Long id;
     
-    //@Expose
     private String name;
     
-    //@Expose
     @Column(name="code")
     private String code;
     
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "section_id", insertable = false, updatable = false)
     @JsonIgnore
     protected Section section;
     
-    @Column(name = "section_id")
+    @Column(name = "section_id", nullable = false)
     private Long sectionId;
 
     protected GeologicalClass() {
     }
 
-    public GeologicalClass(long sectionId, String geoName, String geoCode) {
+    public GeologicalClass(Long sectionId, String geoName, String geoCode) {
+        this.sectionId = sectionId;
         this.name = geoName;
         this.code = geoCode;
-        this.sectionId = sectionId;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

@@ -2,15 +2,12 @@ package demo.geo.app.model;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import demo.geo.app.entities.GeologicalClass;
 
 import javax.validation.Valid;
+import java.util.List;
 
 import demo.geo.app.entities.Section;
-import demo.geo.app.exceptions.BadRequestException;
-import demo.geo.app.exceptions.OkException;
-import java.util.List;
+import demo.geo.app.entities.GeologicalClass;
 
 @RestController
 @RequestMapping("/sections")
@@ -26,15 +23,13 @@ public class SectionController {
     // Add Section with one geoClass
     // initial version was ("/add")
     @PostMapping("")
-    public Section add(@Valid @RequestBody Section section) {
-        Section newSection = sectionService.addSection(section);
-        //sectionService.addGeoclass(newSection.getId(), section.getGeologicalClasses().get(0));
-        return newSection;
+    public Section addSection(@Valid @RequestBody Section section) {
+        return sectionService.addSection(section);
     }
     
     // Add new geoClass to existing Section (as POST-req to Geoclasses resource)
     @PostMapping("/{id}/geoclasses")
-    public String addGeoClassPost(@PathVariable long id, @Valid @RequestBody GeologicalClass geoClass) {
+    public Section addGeoClass(@PathVariable long id, @Valid @RequestBody GeologicalClass geoClass) {
         return sectionService.addGeoclass(id, geoClass);
     }
     
@@ -57,7 +52,6 @@ public class SectionController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable long id) {
         sectionService.delete(id);
-       throw new OkException("Section deleted sucseccfully");
     }
     
     // Delete all records
@@ -65,18 +59,13 @@ public class SectionController {
     @DeleteMapping("")
     public void deleteAll() {
         sectionService.deleteAll();
-       throw new OkException("All sections deleted sucseccfully");
     }
  
     // Returns a list of all Sections that have geologicalClasses with the specified code
     // using JPQL
     // TZ#2
     @GetMapping("/by-code")
-    public String findByCode(@RequestParam(value = "code", required = true) String geoCode) 
-            throws JsonProcessingException {
-        if (geoCode.equals("")) {
-            throw new BadRequestException("! Argument must not be empty !");
-        }
+    public List<Section> findByCode(@RequestParam(value = "code", required = true) String geoCode) {
         return sectionService.findSectionsByGeologicalCode(geoCode);
     }
 
