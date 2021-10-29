@@ -1,12 +1,18 @@
 package demo.geo.app.entities;
 
-import javax.persistence.Entity;
-import java.io.Serializable;
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.gson.annotations.Expose;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-// Subclass for GeologicalClasses like {“name”:“Geo Class 11”,”code”:“GC11”}
+import javax.persistence.Entity;
+import java.io.Serializable;
+import javax.persistence.*;
+
+
+/**
+ * Subclass for Sections
+ */
 @Entity
 @Table(name="geoclasses")
 public class GeologicalClass implements Serializable {
@@ -14,36 +20,68 @@ public class GeologicalClass implements Serializable {
     @GeneratedValue(strategy=GenerationType.AUTO)
     private Integer id;
     
-    @Expose
+    //@Expose
     private String name;
     
-    @Expose
+    //@Expose
     @Column(name="code")
     private String code;
     
-    @JsonManagedReference
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "section_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "section_id", insertable = false, updatable = false)
+    @JsonIgnore
     protected Section section;
+    
+    @Column(name = "section_id")
+    private Long sectionId;
 
-    // Default constructor 'cause JPA
-    protected GeologicalClass() {}
-    // Own constructor
-    public GeologicalClass(Section secName, String geoName, String geoCode) {
-        this.section = secName;
+    protected GeologicalClass() {
+    }
+
+    public GeologicalClass(long sectionId, String geoName, String geoCode) {
         this.name = geoName;
         this.code = geoCode;
+        this.sectionId = sectionId;
     }
 
-    // Getters
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
     public String getName() {
-        return this.name;
+        return name;
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getCode() {
-        return this.code;
+        return code;
     }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
     public Section getSection() {
-        return this.section;
+        return section;
     }
-    
+
+    public void setSection(Section section) {
+        this.section = section;
+    }
+
+    public Long getSectionId() {
+        return sectionId;
+    }
+
+    public void setSectionId(Long sectionId) {
+        this.sectionId = sectionId;
+    }
+
 }

@@ -1,10 +1,5 @@
 package demo.geo.app.xls;
 
-import demo.geo.app.entities.Section;
-import demo.geo.app.exceptions.BadRequestException;
-import demo.geo.app.exceptions.NotFoundException;
-import demo.geo.app.exceptions.UnprocException;
-import demo.geo.app.model.SectionRepository;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -16,7 +11,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Optional;
 
-
+import demo.geo.app.entities.Section;
+import demo.geo.app.exceptions.BadRequestException;
+import demo.geo.app.exceptions.NotFoundException;
+import demo.geo.app.exceptions.UnprocException;
+import demo.geo.app.model.SectionRepository;
 
 @RestController
 public class XlsController {
@@ -54,7 +53,7 @@ public class XlsController {
         if (job.get().getType().equals(JType.IMPORT)) {
             throw new UnprocException("! Job type with this ID is not [export]!");
         }
-        return xmlService.getJobStatus(id).toString();
+        return xmlService.getJobStatus(id);
     }
     
     // Returns a file by Job ID
@@ -101,6 +100,6 @@ public class XlsController {
         if (job.get().getType().equals(JType.EXPORT)) {
             throw new UnprocException("! Job type with this ID is not [import]!");
         }
-        return xmlService.getJobStatus(id).toString();
+        return xmlService.getJobStatus(id);
     }
 }
