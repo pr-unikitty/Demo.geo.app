@@ -1,15 +1,7 @@
 package demo.geo.app.xls;
 
-import demo.geo.app.entities.GeologicalClass;
-import demo.geo.app.entities.Section;
-import demo.geo.app.exceptions.ExportErrorException;
-import demo.geo.app.exceptions.ExportInProcessException;
-import demo.geo.app.exceptions.NotFoundException;
-import demo.geo.app.model.SectionRepository;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-
+import org.springframework.core.io.UrlResource;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -23,10 +15,16 @@ import java.net.MalformedURLException;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
-import org.springframework.core.io.UrlResource;
-import org.springframework.web.multipart.MultipartFile;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 
-
+import demo.geo.app.entities.GeologicalClass;
+import demo.geo.app.entities.Section;
+import demo.geo.app.exceptions.ExportErrorException;
+import demo.geo.app.exceptions.ExportInProcessException;
+import demo.geo.app.exceptions.NotFoundException;
+import demo.geo.app.model.SectionRepository;
 
 @Service
 public class XlsService {
@@ -160,7 +158,7 @@ public class XlsService {
                     if (geoClassName == null || geoClassCode == null) {
                         continue;
                     }
-                    listOfGeoClasses.add(new GeologicalClass(section, geoClassName, geoClassCode));
+                    listOfGeoClasses.add(new GeologicalClass(section.getId(), geoClassName, geoClassCode));
                 }
                 section.addListOfGeoClasses(listOfGeoClasses);
                 sectionRepository.save(section);
