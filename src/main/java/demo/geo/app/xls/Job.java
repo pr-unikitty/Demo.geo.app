@@ -4,15 +4,15 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-enum JType { IMPORT, EXPORT }
-enum JStatus { DONE, IN_PROGRESS, ERROR }
+import demo.geo.app.xls.enums.JStatus;
+import demo.geo.app.xls.enums.JType;
 
 @Entity
 public class Job implements Serializable {
 
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
-    private Integer id;
+    private Long id;
     
     @Enumerated(EnumType.STRING)
     private JType type;
@@ -22,35 +22,49 @@ public class Job implements Serializable {
 
     private LocalDateTime dateTime;
 
-    // Default constructor 'cause JPA
     public Job() {
     }
-    // Own constructor
+
     public Job(JType type) {
         this.type = type;
     }
-    public Job(JType type, Integer id) {
+    
+    public Job(JType type, JStatus status, LocalDateTime dateTime) {
         this.type = type;
+        this.status = status;
+        this.dateTime = dateTime;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
         this.id = id;
     }
-    
-    // Setters & Getters
-    public JStatus getStatus() {
-        return this.status;
+
+    public JType getType() {
+        return type;
     }
+
+    public void setType(JType type) {
+        this.type = type;
+    }
+
+    public JStatus getStatus() {
+        return status;
+    }
+
     public void setStatus(JStatus status) {
         this.status = status;
     }
+
     public LocalDateTime getDateTime() {
-        return this.dateTime;
+        return dateTime;
     }
-    public void setDateTime(LocalDateTime dtime) {
-        this.dateTime = dtime;
+
+    public void setDateTime(LocalDateTime dateTime) {
+        this.dateTime = dateTime;
     }
-    public JType getType() {
-        return this.type;
-    }
-    public Integer getId() {
-        return this.id;
-    }
+
 }

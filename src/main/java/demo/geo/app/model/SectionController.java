@@ -2,6 +2,7 @@ package demo.geo.app.model;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.annotations.ApiOperation;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -20,52 +21,46 @@ public class SectionController {
         this.sectionService = sectionService;
     }
     
-    // Add Section with one geoClass
-    // initial version was ("/add")
     @PostMapping("")
-    public Section addSection(@Valid @RequestBody Section section) {
-        return sectionService.addSection(section);
+    @ApiOperation("Adds Section with list of GeologicalClasses. "
+            + "List of geoClasses can be null; geoClasses must have uniq names and codes")
+    public Section createSection(@Valid @RequestBody Section section) {
+        return sectionService.createSection(section);
     }
     
-    // Add new geoClass to existing Section (as POST-req to Geoclasses resource)
     @PostMapping("/{id}/geoclasses")
+    @ApiOperation("Adds new geologicalClass to existing Section")
     public Section addGeoClass(@PathVariable long id, @Valid @RequestBody GeologicalClass geoClass) {
-        return sectionService.addGeoclass(id, geoClass);
+        return sectionService.addGeoclassToSection(id, geoClass);
     }
     
-    // Find one section by ID and return info
-    // initial version was ("/findById")
     @GetMapping("/{id}")
+    @ApiOperation("Finds one Section by ID")
     public Section findById(@PathVariable long id) {
         return sectionService.findOne(id);
     }
     
-    // Find all records in DB
-    // initial version was ("showAll")
     @GetMapping("")
+    @ApiOperation("Finds all Section by ID")
     public List<Section> findAll() {
        return sectionService.findAll();
     }
     
-    // Delete one record by ID
-    // initial version was ("/delete")
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable long id) {
-        sectionService.delete(id);
+    @ApiOperation("Deletes one Section by ID")
+    public void deleteById(@PathVariable long id) {
+        sectionService.deleteById(id);
     }
     
-    // Delete all records
-    // initial version was ("/deleteAll")
     @DeleteMapping("")
+    @ApiOperation("Deletes all Section by ID")
     public void deleteAll() {
         sectionService.deleteAll();
     }
  
-    // Returns a list of all Sections that have geologicalClasses with the specified code
-    // using JPQL
-    // TZ#2
     @GetMapping("/by-code")
-    public List<Section> findByCode(@RequestParam(value = "code", required = true) String geoCode) {
+    @ApiOperation("TZ#2: Returns a list of all Sections that have geologicalClasses with the specified code")
+    public List<Section> findByGeologicalCode(@RequestParam(value = "code", required = true) String geoCode) {
         return sectionService.findSectionsByGeologicalCode(geoCode);
     }
 
