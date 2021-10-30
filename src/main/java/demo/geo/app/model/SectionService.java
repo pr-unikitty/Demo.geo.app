@@ -2,8 +2,6 @@ package demo.geo.app.model;
 
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import java.util.*;
 
@@ -26,42 +24,34 @@ public class SectionService {
         this.geologicalClassRepository = geologicalClassRepository;
     }
     
-    // Find one section by id and return info in correct form without id;
-    // simple method shows ArrayList as mem's address
-    public String findOneToJSON(long id) {
-        Section section = sectionRepository.getById(id);
-        if (section == null) 
-            throw new NotFoundException("! Section with this ID is not found !");
-        // With only fields with @Expose
-        Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create(); 
-        return gson.toJson(section);
-    }
-    
-    public Section findOne(long id) {
-        return sectionRepository.findById(id).orElse(null);
-    }
-    
-    // Find each section and show it with general {}
-    // (uses previous function findOneToJSON)
-    public String findAllToJSON() {
-        Iterable<Section> sections = sectionRepository.findAll();
-        if (sections.toString().equals("[]")) {
-            throw new NotFoundException("! No any section found (DB is empty) !");
-        }
-        String output = "";
-        for (Section sec : sections) {
-            System.out.println("*** "+ sec +" ***");
-            output += findOneToJSON(sec.getId());
-        }
-        return output;
-    }
-    
+    /**
+     * Finds all the {@link Section} and returns they as list
+     * 
+     * @return list of Section or null
+     */
     public List<Section> findAll() {
         return sectionRepository.findAll();
     }
     
-    // Add new Section with one couple {geoClassName, geoClassCode}
-    public Section addSection(Section section) {
+    /**
+     * Finds and returns {@link Section} by ID
+     * 
+     * @param id id of section to find
+     * @return section or null
+     */
+    public Section findOne(long id) {
+        return sectionRepository.findById(id).orElse(null);
+    }
+	
+    /**
+     * Adds new {@link Section} with list of {@link GeologicalClass} 
+     * List can be empthy; each GeologicalClass must have unique name and code
+     * or @throws UnprocException if Section not found
+     * 
+     * @param section Section to add
+     * @return added Section
+     */
+    public Section createSection(Section section) {
         Section existingSection = sectionRepository.findByName(section.getName());
         if (existingSection != null) {
             throw new UnprocException("! Section with this name is already exist !");
@@ -72,15 +62,19 @@ public class SectionService {
         List<GeologicalClass> geoClasses = section.getGeologicalClasses();
         if (geoClasses != null) {
             for (GeologicalClass newGeoClass : geoClasses) {
-                addGeoclass(newSection.getId(), newGeoClass);
+                addGeoclassToSection(newSection.getId(), newGeoClass);
             }
         }
-        sectionRepository.save(newSection);
-        return newSection;
+        return sectionRepository.save(newSection);
     }
         
-    // Delete one record by ID    
-    public void delete(long id) {
+    /**
+     * Deletes one {@link Section} by ID  
+     * or @throws NotFoundException if Section not found
+     * 
+     * @param id id of Section to delete
+     */
+    public void deleteById(long id) {
         if (sectionRepository.getById(id) == null) {
             throw new NotFoundException("! Section with this ID can not be deleted because is not found !");
         }
@@ -88,6 +82,11 @@ public class SectionService {
     }
 
     // Delete all sections with geoClasses  
+
+    /**
+     * Deletes all {@link Section}s
+     * or @throws NotFoundException if no one Section is found
+     */
     public void deleteAll() {
         List<Section> sections = sectionRepository.findAll();
         if (sections.isEmpty()) {
@@ -98,8 +97,15 @@ public class SectionService {
         }
     }
     
-    // Add geoClass to Section
-    public Section addGeoclass(long id, GeologicalClass geoClass) {
+    /**
+     * Adds {@link GeologicalClass} to existing {@link Section}
+     * If name of code of GeologicalClass exists, @throws UnprocException
+     * 
+     * @param id id of Section to add GeologicalClass
+     * @param geoClass GeologicalClass to add
+     * @return updated Section
+     */
+    public Section addGeoclassToSection(long id, GeologicalClass geoClass) {
         Section existingSection = sectionRepository.getById(id);
         if (existingSection == null) {
             throw new NotFoundException("! Section with this ID does not exists !");
@@ -119,8 +125,12 @@ public class SectionService {
         return sectionRepository.save(existingSection);
     }
     
-    // Returns a list of all Sections that have geologicalClasses with the specified code
-    // TZ#2
+    /**
+     * TZ#2: Returns list of all {@link Section}s that have {@link GeologicalClass}es with the specified code
+     * 
+     * @param geoCode specified code of GeologicalClass
+     * @return list of Section
+     */
     public List<Section> findSectionsByGeologicalCode (String geoCode) {
         List<Section> neededSections = sectionRepository.findSectionsByGeoCode(geoCode);
         return neededSections;
