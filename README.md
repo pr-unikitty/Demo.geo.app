@@ -30,7 +30,6 @@ Technology stack: JDK 11, Spring Boot 2.5.6, Hipernate, SpringData, ApachePOI, G
             "code": "GC12",
             "sectionId": 1
         }
-	
     ]
 }
   
