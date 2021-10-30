@@ -1,4 +1,4 @@
-package demo.geo.app.model;
+package demo.geo.app.services;
 
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,19 +9,16 @@ import demo.geo.app.entities.GeologicalClass;
 import demo.geo.app.entities.Section;
 import demo.geo.app.exceptions.NotFoundException;
 import demo.geo.app.exceptions.UnprocException;
+import demo.geo.app.dao.SectionRepository;
 
 @Service
 public class SectionService {
     
     private final SectionRepository sectionRepository;
-    
-    private final GeologicalClassRepository geologicalClassRepository;
-    
+        
     @Autowired
-    public SectionService(SectionRepository sectionRepository, 
-            GeologicalClassRepository geologicalClassRepository) {
+    public SectionService(SectionRepository sectionRepository) {
         this.sectionRepository = sectionRepository;
-        this.geologicalClassRepository = geologicalClassRepository;
     }
     
     /**

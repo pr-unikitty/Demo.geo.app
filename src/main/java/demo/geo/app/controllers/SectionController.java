@@ -1,4 +1,4 @@
-package demo.geo.app.model;
+package demo.geo.app.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -9,6 +9,7 @@ import java.util.List;
 
 import demo.geo.app.entities.Section;
 import demo.geo.app.entities.GeologicalClass;
+import demo.geo.app.services.SectionService;
 
 @RestController
 @RequestMapping("/sections")

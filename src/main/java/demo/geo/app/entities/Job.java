@@ -1,4 +1,4 @@
-package demo.geo.app.xls;
+package demo.geo.app.entities;
 
 import javax.persistence.*;
 import java.io.Serializable;

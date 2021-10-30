@@ -1,4 +1,4 @@
-package demo.geo.app.model;
+package demo.geo.app.dao;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.JpaRepository;

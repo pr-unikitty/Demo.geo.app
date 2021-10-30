@@ -1,5 +1,6 @@
-package demo.geo.app.xls;
+package demo.geo.app.dao;
 
+import demo.geo.app.entities.Job;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 
