@@ -1,14 +1,11 @@
-package demo.geo.app.xls;
+package demo.geo.app.services;
 
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
-import org.apache.poi.hssf.usermodel.*;
 
-import java.util.*;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,13 +14,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 
-import demo.geo.app.entities.GeologicalClass;
 import demo.geo.app.entities.Section;
 import demo.geo.app.exceptions.NotFoundException;
 import demo.geo.app.exceptions.UnprocException;
-import demo.geo.app.model.SectionRepository;
+import demo.geo.app.dao.SectionRepository;
+import demo.geo.app.dao.JobRepository;
 import demo.geo.app.xls.enums.JStatus;
 import demo.geo.app.xls.enums.JType;
+import demo.geo.app.entities.Job;
 
 @Service
 public class XlsService {
@@ -32,12 +30,16 @@ public class XlsService {
 
     private final JobRepository jobRepository;
 
+    private final FileService fileService;
+    
     final static String TOM_CAT_DIR = System.getProperty("catalina.home");
     
     @Autowired
-    public XlsService (SectionRepository sectionRepository, JobRepository jobRepository) {
+    public XlsService (SectionRepository sectionRepository, JobRepository jobRepository,
+            FileService fileService) {
         this.sectionRepository = sectionRepository;
         this.jobRepository = jobRepository;
+        this.fileService = fileService;
     }
     
     /**
@@ -49,6 +51,13 @@ public class XlsService {
      */
     public Job startJob(JType jobType) {
         Job newJob = new Job(jobType, JStatus.IN_PROGRESS, LocalDateTime.now());
+        if (newJob.getType() == JType.EXPORT) {
+            List<Section> sections = sectionRepository.findAll();
+            if (sections.isEmpty()) {
+                throw new NotFoundException("! No any section found (DB is empty) !");
+            }
+            fileService.generateXLS(newJob);
+        }
         return jobRepository.save(newJob);
     }
 
@@ -95,67 +104,34 @@ public class XlsService {
             throw new UnprocException("! Job status is not DONE or job type is not EXPORT !");
         }
     }
-    
-    // For TZ#3: /import
-    // load user file and save it to temp.local dir with name as JobID.xls
-    // !import add any records, even it's already exists in DB
+
+    /**
+     * Loads user file and saves it to temp local dir of Tom Cat with name as JobID.xls
+     * (for TZ#3: /import)
+     * Then starts the parsing this file
+     * !import add any records, even it's already exists in DB
+     * 
+     * @param job
+     * @param file
+     * @return
+     * @throws IOException
+     */
     @Async
     public File importXLS(Job job, MultipartFile file) throws IOException {
-        byte[] fileBytes = file.getBytes();
-        String fileName = job.getId().toString() + ".xls";
-        File newFile = new File(TOM_CAT_DIR + File.separator + fileName);
-        try (BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(newFile))) {
-            stream.write(fileBytes);
+        if (file.isEmpty()) {
+            throw new UnprocException ("! File upload is failed: File is empty !");
         }
-        //System.out.println("File is saved under: " + TOM_CAT_DIR + File.separator + file.getOriginalFilename());
+        
+        String fileName = TOM_CAT_DIR + File.separator + job.getId() + ".xls";
+        File newFile = new File(fileName);
+        try (BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(newFile))) {
+            stream.write(file.getBytes());
+            stream.flush();
+        }
+        
+        fileService.parseXLS(newFile, job);
+        
         return newFile;
     }
     
-    // For TZ#3: /import
-    // Read uploaded user file and parse it as XML book
-    @Async
-    public void parseXLS(InputStream inputStream, Job job) {
-        try {
-            HSSFWorkbook xlsFile = new HSSFWorkbook(inputStream);
-            inputStream.close();
-            HSSFSheet sheet = xlsFile.getSheetAt(0); // header
-            // Read body
-            for (int i = 1; i < sheet.getPhysicalNumberOfRows(); i++) {
-                // Read string
-                HSSFRow currentRow = sheet.getRow(i);
-                if (currentRow == null) {
-                    continue;
-                }
-                String secName = currentRow.getCell(0).getStringCellValue();
-                Section section = sectionRepository.save(new Section(secName));
-
-                // Jumping for pairs {geoClass, geoCode}
-                List<GeologicalClass> listOfGeoClasses = new ArrayList<>();
-                for (int j = 1; j < currentRow.getLastCellNum(); j += 2) {
-                    String geoClassName = readCell(currentRow, j);
-                    String geoClassCode = readCell(currentRow, j+1);
-                    if (geoClassName == null || geoClassCode == null) {
-                        continue;
-                    }
-                    listOfGeoClasses.add(new GeologicalClass(section.getId(), geoClassName, geoClassCode));
-                }
-                section.addListOfGeoClasses(listOfGeoClasses);
-                sectionRepository.save(section);
-            }
-            job.setStatus(JStatus.DONE);
-            jobRepository.save(job);
-        } catch (IOException e) {
-            job.setStatus(JStatus.ERROR);
-            jobRepository.save(job);
-        }
-    }
-    
-    // Auxiliary func for reading geoClassName or geoClassCode from HSSF cell
-    private String readCell (HSSFRow currentRow, int cellNum) {
-        HSSFCell geoNameCell = currentRow.getCell(cellNum);
-        if(geoNameCell == null) {
-            return null;
-        }
-        return geoNameCell.getStringCellValue();
-    }
 }

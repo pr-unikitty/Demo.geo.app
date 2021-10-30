@@ -1,11 +1,9 @@
 package demo.geo.app.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import javax.persistence.Entity;
 import java.io.Serializable;
 import javax.persistence.*;
-
 
 /**
  * Subclass for Sections

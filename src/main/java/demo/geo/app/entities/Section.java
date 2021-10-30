@@ -1,6 +1,5 @@
 package demo.geo.app.entities;
 
-
 import java.io.Serializable;
 import javax.persistence.*;
 import java.util.*;

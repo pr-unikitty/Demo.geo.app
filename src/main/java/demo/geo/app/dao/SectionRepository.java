@@ -1,4 +1,4 @@
-package demo.geo.app.model;
+package demo.geo.app.dao;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
