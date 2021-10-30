@@ -2,13 +2,13 @@
 Technology stack: JDK 11, Spring Boot 2.5.6, Hipernate, SpringData, ApachePOI, Gradle 7.2
 
 ## Features  
-  * JSON-format is used   
+  * JSON-format
      
   * Open-source RDBMS H2   
      
   * Port 8086 ("Hello, first Intel")   
      
-  * Files import-export uses temporary folder of Apache Tomcat with path like (for Windows): [C:\Users\_user_\AppData\Local\Temp\tomcat.8086.2443894020857019464]
+  * Files import-export uses temporary folder of Apache Tomcat with path like (for Windows): [C:\Users\\_user_\AppData\Local\Temp\tomcat.8086.2443894020857019464]
   
 ## Data  
 
