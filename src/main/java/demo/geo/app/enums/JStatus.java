@@ -1,4 +1,4 @@
-package demo.geo.app.xls.enums;
+package demo.geo.app.enums;
 
 /**
  * Status of importing/exporting file

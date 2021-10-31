@@ -56,10 +56,11 @@ public class SectionService {
         Section newSection = new Section(section.getName());
         sectionRepository.save(newSection);
         sectionRepository.flush();
+        
         List<GeologicalClass> geoClasses = section.getGeologicalClasses();
         if (geoClasses != null) {
             for (GeologicalClass newGeoClass : geoClasses) {
-                addGeoclassToSection(newSection.getId(), newGeoClass);
+                addGeoclassOrThrow(newSection.getId(), newGeoClass);
             }
         }
         return sectionRepository.save(newSection);
@@ -96,29 +97,20 @@ public class SectionService {
     
     /**
      * Adds {@link GeologicalClass} to existing {@link Section}
-     * If name of code of GeologicalClass exists, @throws UnprocException
+     * If name or code of GeologicalClass exists, @throws UnprocException
      * 
      * @param id id of Section to add GeologicalClass
      * @param geoClass GeologicalClass to add
      * @return updated Section
      */
-    public Section addGeoclassToSection(long id, GeologicalClass geoClass) {
+    public Section addGeoclassOrThrow(long id, GeologicalClass geoClass) {
         Section existingSection = sectionRepository.getById(id);
         if (existingSection == null) {
             throw new NotFoundException("! Section with this ID does not exists !");
         }
-        List<GeologicalClass> geoClasses = existingSection.getGeologicalClasses();
-        if (geoClasses != null) {
-            for (GeologicalClass existingGeoClass : geoClasses) {
-                if (existingGeoClass.getName().equals(geoClass.getName())) {
-                    throw new UnprocException("! GeologicalClass witn this Name already exists in this Section!");
-                }
-                if (existingGeoClass.getCode().equals(geoClass.getCode())) {
-                    throw new UnprocException("! GeologicalClass witn this Code already exists in this Section!");
-                }
-            } 
+        if (addGeoClassIfAbsent(existingSection, geoClass)) {
+            throw new UnprocException("! GeologicalClass witn this Name or this Code already exists in this Section!");
         }
-        existingSection.addGeoClass(new GeologicalClass(existingSection.getId(), geoClass.getName(), geoClass.getCode()));
         return sectionRepository.save(existingSection);
     }
     
@@ -133,4 +125,28 @@ public class SectionService {
         return neededSections;
     }
 
+    /**
+     * Checks for the existence of a {@link GeologicalClass} with the same name 
+     * or code in {@link Section} and adds GeologicalClass, if absent
+     * 
+     * @param section existing section to update
+     * @param newGeoClass GeologicalClass to add in this section
+     * @return true, if GeologicalClass with the same name or code is exists in
+     * this section, orelse return false
+     */
+    public boolean addGeoClassIfAbsent(Section section, GeologicalClass newGeoClass) {
+        List<GeologicalClass> existingGeoClasses = section.getGeologicalClasses();
+        if (!existingGeoClasses.isEmpty()) {
+            for (GeologicalClass existingGeoClass : existingGeoClasses) {
+                if (existingGeoClass.getName().equals(newGeoClass.getName()) || 
+                        existingGeoClass.getCode().equals(newGeoClass.getCode())) {
+                    return true;
+                }
+            }
+        }
+        existingGeoClasses.add(newGeoClass);
+        newGeoClass.setSectionId(section.getId());
+        section.setGeologicalClasses(existingGeoClasses);
+        return false;
+    } 
 }

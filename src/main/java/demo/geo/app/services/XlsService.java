@@ -19,8 +19,8 @@ import demo.geo.app.exceptions.NotFoundException;
 import demo.geo.app.exceptions.UnprocException;
 import demo.geo.app.dao.SectionRepository;
 import demo.geo.app.dao.JobRepository;
-import demo.geo.app.xls.enums.JStatus;
-import demo.geo.app.xls.enums.JType;
+import demo.geo.app.enums.JStatus;
+import demo.geo.app.enums.JType;
 import demo.geo.app.entities.Job;
 
 @Service

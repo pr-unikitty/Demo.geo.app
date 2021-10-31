@@ -16,7 +16,7 @@ import demo.geo.app.entities.GeologicalClass;
 import demo.geo.app.entities.Section;
 import demo.geo.app.dao.SectionRepository;
 import demo.geo.app.dao.JobRepository;
-import demo.geo.app.xls.enums.JStatus;
+import demo.geo.app.enums.JStatus;
 import java.io.FileInputStream;
 
 @Service
@@ -25,15 +25,18 @@ public class FileService {
     private final SectionRepository sectionRepository;
 
     private final JobRepository jobRepository;
+    
+    private final SectionService sectionService;
 
     final static String TOM_CAT_DIR = System.getProperty("catalina.home");
     
     @Autowired
-    public FileService (SectionRepository sectionRepository, JobRepository jobRepository) {
+    public FileService (SectionRepository sectionRepository, JobRepository jobRepository,
+            SectionService sectionService) {
         this.sectionRepository = sectionRepository;
         this.jobRepository = jobRepository;
-        System.out.println("*** "+ TOM_CAT_DIR +" ***");
-
+        this.sectionService = sectionService;
+        //System.out.println("*** "+ TOM_CAT_DIR +" ***");
     }
     
     /**
@@ -50,23 +53,23 @@ public class FileService {
             HSSFWorkbook book = new HSSFWorkbook();
             HSSFSheet sheet = book.createSheet("Sections");
             HSSFRow headerRow = sheet.createRow(0);
-            addCell(headerRow,"Section name");
+            writeCell(headerRow,"Section name");
 
             for (Section sec : sections) {
                 // Section name
                 HSSFRow row = sheet.createRow(sheet.getLastRowNum() + 1);
-                addCell(row,sec.getName());
+                writeCell(row,sec.getName());
                 
                 // GeoClasses
                 List<GeologicalClass> geoClasses = sec.getGeologicalClasses();
                 for (GeologicalClass geoClass : geoClasses) {
                     if (row.getLastCellNum() == headerRow.getLastCellNum()) {
                         int i = Math.floorDiv(headerRow.getLastCellNum(), 2) + 1;
-                        addCell(headerRow,String.format("Class %d name", i));
-                        addCell(headerRow,String.format("Class %d code", i));
+                        writeCell(headerRow,String.format("Class %d name", i));
+                        writeCell(headerRow,String.format("Class %d code", i));
                     }
-                    addCell(row,(geoClass.getName()));
-                    addCell(row,(geoClass.getCode()));
+                    writeCell(row,(geoClass.getName()));
+                    writeCell(row,(geoClass.getCode()));
                 }
             }
 
@@ -80,16 +83,6 @@ public class FileService {
         }
     }
     
-    /**
-     * Auxiliary method for adding cell to row in HSSF book
-     * @param row current row
-     * @param stringValue text to add in the cell
-     */
-    private void addCell(HSSFRow row, String stringValue) {
-        HSSFCell newCell = row.createCell(Math.max(row.getLastCellNum(), 0));
-        newCell.setCellValue(stringValue);
-    }
-
     /**
      * Reads uploaded file and parses it as XLS book; 
      * Also sets up the job status 
@@ -105,27 +98,28 @@ public class FileService {
             HSSFWorkbook xlsFile = new HSSFWorkbook(inputStream);
             inputStream.close();
             HSSFSheet sheet = xlsFile.getSheetAt(0); // header
-            // Read body
+
             for (int i = 1; i < sheet.getPhysicalNumberOfRows(); i++) {
-                // Read string
                 HSSFRow currentRow = sheet.getRow(i);
                 if (currentRow == null) {
                     continue;
                 }
+                
                 String secName = currentRow.getCell(0).getStringCellValue();
+                if (sectionRepository.findByName(secName) != null) {
+                    continue;
+                }
                 Section section = sectionRepository.save(new Section(secName));
-
+                
                 // Jumping for pairs {geoClass, geoCode}
-                List<GeologicalClass> listOfGeoClasses = new ArrayList<>();
                 for (int j = 1; j < currentRow.getLastCellNum(); j += 2) {
                     String geoClassName = readCell(currentRow, j);
                     String geoClassCode = readCell(currentRow, j+1);
                     if (geoClassName == null || geoClassCode == null) {
                         continue;
                     }
-                    listOfGeoClasses.add(new GeologicalClass(section.getId(), geoClassName, geoClassCode));
+                    sectionService.addGeoClassIfAbsent(section, new GeologicalClass(section.getId(), geoClassName, geoClassCode));
                 }
-                section.addListOfGeoClasses(listOfGeoClasses);
                 sectionRepository.save(section);
             }
             job.setStatus(JStatus.DONE);
@@ -137,7 +131,7 @@ public class FileService {
     }
     
     /**
-     * Auxiliary func for reading geoClassName or geoClassCode from HSSF cell
+     * Auxiliary method for reading geoClassName or geoClassCode from HSSF cell
      * 
      * @param currentRow current row to read cell
      * @param cellNum number of cell in current row to read 
@@ -151,4 +145,13 @@ public class FileService {
         return geoNameCell.getStringCellValue();
     }
     
+    /**
+     * Auxiliary method for adding cell to row in HSSF book
+     * @param row current row
+     * @param stringValue text to add in the cell
+     */
+    private void writeCell(HSSFRow row, String stringValue) {
+        HSSFCell newCell = row.createCell(Math.max(row.getLastCellNum(), 0));
+        newCell.setCellValue(stringValue);
+    }
 }

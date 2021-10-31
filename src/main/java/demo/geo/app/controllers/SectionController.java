@@ -32,7 +32,7 @@ public class SectionController {
     @PostMapping("/{id}/geoclasses")
     @ApiOperation("Adds new geologicalClass to existing Section")
     public Section addGeoClass(@PathVariable long id, @Valid @RequestBody GeologicalClass geoClass) {
-        return sectionService.addGeoclassToSection(id, geoClass);
+        return sectionService.addGeoclassOrThrow(id, geoClass);
     }
     
     @GetMapping("/{id}")

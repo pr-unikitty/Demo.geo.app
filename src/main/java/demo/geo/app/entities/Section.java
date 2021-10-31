@@ -9,7 +9,7 @@ import java.util.*;
 public class Section implements Serializable {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(name = "section_id")
     private Long id;
     
@@ -53,21 +53,6 @@ public class Section implements Serializable {
 
     public void setGeologicalClasses(List<GeologicalClass> geologicalClasses) {
         this.geologicalClasses = geologicalClasses;
-    }
-
-    // Add GeoClass to existing Section
-    public Section addGeoClass(GeologicalClass geo) {
-        this.geologicalClasses.add(geo);
-        return this;
-    }
-    
-    // Add GeoClass to existing Section
-    public Section addListOfGeoClasses(List<GeologicalClass> geos) {
-        for (GeologicalClass geoClass : geos) {
-            this.geologicalClasses.add(
-                    geoClass);
-        }
-        return this;
     }
 
 }
