@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-import demo.geo.app.xls.enums.JType;
+import demo.geo.app.enums.JType;
 
 @Repository
 public interface JobRepository extends JpaRepository<Job, Long> {

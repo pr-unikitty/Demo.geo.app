@@ -11,8 +11,8 @@ import java.io.File;
 import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
 
-import demo.geo.app.xls.enums.JStatus;
-import demo.geo.app.xls.enums.JType;
+import demo.geo.app.enums.JStatus;
+import demo.geo.app.enums.JType;
 import demo.geo.app.entities.Job;
 import demo.geo.app.services.XlsService;
 

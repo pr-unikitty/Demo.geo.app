@@ -1,4 +1,4 @@
-package demo.geo.app.xls.enums;
+package demo.geo.app.enums;
 
 /**
  * There are two types of file: importing and exporting files

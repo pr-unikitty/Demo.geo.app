@@ -4,14 +4,14 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-import demo.geo.app.xls.enums.JStatus;
-import demo.geo.app.xls.enums.JType;
+import demo.geo.app.enums.JStatus;
+import demo.geo.app.enums.JType;
 
 @Entity
 public class Job implements Serializable {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
     
     @Enumerated(EnumType.STRING)
@@ -21,7 +21,7 @@ public class Job implements Serializable {
     private JStatus status;
 
     private LocalDateTime dateTime;
-
+    
     public Job() {
     }
 

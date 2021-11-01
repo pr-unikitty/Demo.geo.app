@@ -9,8 +9,8 @@ import java.io.IOException;
 
 import demo.geo.app.entities.Job;
 import demo.geo.app.services.XlsService;
-import demo.geo.app.xls.enums.JStatus;
-import demo.geo.app.xls.enums.JType;
+import demo.geo.app.enums.JStatus;
+import demo.geo.app.enums.JType;
 
 @RestController
 @RequestMapping("/import")
