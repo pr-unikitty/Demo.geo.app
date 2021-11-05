@@ -16,7 +16,7 @@ import java.io.FileNotFoundException;
 
 import demo.geo.app.entities.Section;
 import demo.geo.app.exceptions.NotFoundException;
-import demo.geo.app.exceptions.UnprocException;
+import demo.geo.app.exceptions.UnprocessableException;
 import demo.geo.app.dao.SectionRepository;
 import demo.geo.app.dao.JobRepository;
 import demo.geo.app.enums.JStatus;
@@ -76,7 +76,7 @@ public class XlsService {
             throw new NotFoundException("! Job with this ID is not found !");
         }
         if (existingJob.getType().equals(type)) {
-            throw new UnprocException("! Job type with this ID is not [" + type + "]!");
+            throw new UnprocessableException("! Job type with this ID is not [" + type + "]!");
         }
         return existingJob.getStatus();
     }
@@ -101,7 +101,7 @@ public class XlsService {
             }
             return file;
         } else {
-            throw new UnprocException("! Job status is not DONE or job type is not EXPORT !");
+            throw new UnprocessableException("! Job status is not DONE or job type is not EXPORT !");
         }
     }
 
@@ -119,7 +119,7 @@ public class XlsService {
     @Async
     public File importXLS(Job job, MultipartFile file) throws IOException {
         if (file.isEmpty()) {
-            throw new UnprocException ("! File upload is failed: File is empty !");
+            throw new UnprocessableException ("! File upload is failed: File is empty !");
         }
         
         String fileName = TOM_CAT_DIR + File.separator + job.getId() + ".xls";
