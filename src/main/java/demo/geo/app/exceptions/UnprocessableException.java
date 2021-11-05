@@ -4,9 +4,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-public class UnprocException extends RuntimeException {
+public class UnprocessableException extends RuntimeException {
 
-    public UnprocException(String message) {
+    public UnprocessableException(String message) {
         super(message);
     }
 

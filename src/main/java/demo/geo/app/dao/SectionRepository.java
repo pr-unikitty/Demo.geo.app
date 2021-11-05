@@ -13,7 +13,8 @@ import demo.geo.app.entities.Section;
 public interface SectionRepository extends JpaRepository<Section, Long> {
     @Query(value = "SELECT * FROM sections sec JOIN geoclasses geo ON sec.section_id = geo.section_id WHERE geo.code=?1", nativeQuery = true) 
     List<Section> findSectionsByGeoCode(@Param("code") String code);
-    
+    Section findById(long id);
     Section findByName(String name);
+    void deleteById(long id);
 }
 
