@@ -83,10 +83,9 @@ public class SectionServiceImplTest {
         final long WRONG_SESSION_ID = SECTION_ID + 1L;
         
         when(sectionRepository.findById(WRONG_SESSION_ID)).thenReturn(null);
-        Section gotSection = sectionService.findOne(WRONG_SESSION_ID);
-        
+        assertThatThrownBy(() -> sectionService.findOne(WRONG_SESSION_ID))
+                                  .isInstanceOf(NotFoundException.class);
         verify(sectionRepository).findById(WRONG_SESSION_ID);
-        assertNull(gotSection);
     }
     
     /**
@@ -204,6 +203,17 @@ public class SectionServiceImplTest {
         assertEquals(gotSections, Collections.emptyList());
     }
 
+    /**
+     * Test of addGeoClassIfAbsent method, of class SectionServiceImpl.
+     */
+    @Test
+    public void testAddGeoClassIfAbsent_Success() {
+            GeologicalClass newGeoClass = new GeologicalClass(SECTION_ID, "other name", "other code");
+
+            boolean result = sectionService.addGeoClassIfAbsent(section, newGeoClass);
+            assertEquals(result, false);
+    }
+        
     /**
      * Test of addGeoClassIfAbsent method, of class SectionServiceImpl.
      */

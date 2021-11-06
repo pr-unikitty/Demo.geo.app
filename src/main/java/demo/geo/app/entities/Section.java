@@ -28,7 +28,7 @@ public class Section implements Serializable {
 
     public Section(String name, List<GeologicalClass> geologicalClasses) {
         this.name = name;
-        this.geologicalClasses = geologicalClasses;
+        this.geologicalClasses = new ArrayList<>(geologicalClasses);
     }
 
     public Long getId() {

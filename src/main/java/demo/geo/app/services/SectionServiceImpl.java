@@ -2,6 +2,7 @@ package demo.geo.app.services;
 
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import javax.transaction.Transactional;
 
 import java.util.*;
 
@@ -18,7 +19,9 @@ import demo.geo.app.dao.SectionRepository;
 public class SectionServiceImpl implements SectionService {
     
     private final SectionRepository sectionRepository;
-        
+    
+    private final String SECTION_NOT_FOUND_BY_ID = "Section with this ID does not exist";
+    
     @Autowired
     public SectionServiceImpl(SectionRepository sectionRepository) {
         this.sectionRepository = sectionRepository;
@@ -42,22 +45,27 @@ public class SectionServiceImpl implements SectionService {
      */
     @Override
     public Section findOne(long id) {
-        return sectionRepository.findById(id);
+        Section section = sectionRepository.findById(id);
+        if (section == null) {
+            throw new NotFoundException(SECTION_NOT_FOUND_BY_ID);
+        }
+        return section;
     }
 	
     /**
      * Adds new {@link Section} with list of {@link GeologicalClass} 
- List can be empthy; each GeologicalClass must have unique name and code
- or @throws UnprocessableException if Section not found
+     * List can be empthy; each GeologicalClass must have unique name and code
+     * or @throws UnprocessableException if Section not found
      * 
      * @param section Section to add
      * @return added Section
      */
     @Override
+    @Transactional
     public Section createSection(Section section) {
         Section existingSection = sectionRepository.findByName(section.getName());
         if (existingSection != null) {
-            throw new UnprocessableException("! Section with this name is already exist !");
+            throw new UnprocessableException("Section with this name is already exist");
         }
         Section newSection = new Section(section.getName());
         sectionRepository.save(newSection);
@@ -79,25 +87,22 @@ public class SectionServiceImpl implements SectionService {
      * @param id id of Section to delete
      */
     @Override
+    @Transactional
     public void deleteById(long id) {
         if (sectionRepository.findById(id) == null) {
-            throw new NotFoundException("! Section with this ID can not be deleted because is not found !");
+            throw new NotFoundException(SECTION_NOT_FOUND_BY_ID);
         }
         sectionRepository.deleteById(id);
     }
-
-    // Delete all sections with geoClasses  
 
     /**
      * Deletes all {@link Section}s
      * or @throws NotFoundException if no one Section is found
      */
     @Override
+    @Transactional
     public void deleteAll() {
         List<Section> sections = sectionRepository.findAll();
-        if (sections.isEmpty()) {
-            throw new NotFoundException("! No any section found (DB is empty) !");
-        }
         for (Section sec : sections) {
             sectionRepository.deleteById(sec.getId());
         }
@@ -112,13 +117,14 @@ public class SectionServiceImpl implements SectionService {
      * @return updated Section
      */
     @Override
+    @Transactional
     public Section addGeoclassOrThrow(long id, GeologicalClass geoClass) {
         Section existingSection = sectionRepository.findById(id);
         if (existingSection == null) {
-            throw new NotFoundException("! Section with this ID does not exists !");
+            throw new NotFoundException(SECTION_NOT_FOUND_BY_ID);
         }
         if (addGeoClassIfAbsent(existingSection, geoClass)) {
-            throw new UnprocessableException("! GeologicalClass witn this Name or this Code already exists in this Section!");
+            throw new UnprocessableException("GeologicalClass witn these Name or Code already exists in this Section");
         }
         return sectionRepository.save(existingSection);
     }

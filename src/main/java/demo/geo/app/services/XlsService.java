@@ -23,6 +23,9 @@ import demo.geo.app.enums.JStatus;
 import demo.geo.app.enums.JType;
 import demo.geo.app.entities.Job;
 
+/**
+ * Provides methods for XLS file management
+ */
 @Service
 public class XlsService {
 
@@ -54,7 +57,7 @@ public class XlsService {
         if (newJob.getType() == JType.EXPORT) {
             List<Section> sections = sectionRepository.findAll();
             if (sections.isEmpty()) {
-                throw new NotFoundException("! No any section found (DB is empty) !");
+                throw new NotFoundException("No any section found (DB is empty)");
             }
             fileService.generateXLS(newJob);
         }
@@ -73,10 +76,10 @@ public class XlsService {
     public JStatus getJobStatus(JType type, long jobId) {
         Job existingJob = jobRepository.getById(jobId);
         if (existingJob == null) {
-            throw new NotFoundException("! Job with this ID is not found !");
+            throw new NotFoundException("Job with this ID does not exist");
         }
         if (existingJob.getType().equals(type)) {
-            throw new UnprocessableException("! Job type with this ID is not [" + type + "]!");
+            throw new UnprocessableException("Job type with this ID is not [" + type + "]");
         }
         return existingJob.getStatus();
     }
@@ -97,11 +100,11 @@ public class XlsService {
             String fileName = TOM_CAT_DIR + File.separator + id.toString() + ".xls";
             File file = new File(fileName);
             if(!file.exists()) {
-                throw new NotFoundException("! File " + fileName + " is not found !");
+                throw new NotFoundException("File " + fileName + " is not found");
             }
             return file;
         } else {
-            throw new UnprocessableException("! Job status is not DONE or job type is not EXPORT !");
+            throw new UnprocessableException("Job status is not [DONE] or job type is not [EXPORT]");
         }
     }
 
@@ -119,7 +122,7 @@ public class XlsService {
     @Async
     public File importXLS(Job job, MultipartFile file) throws IOException {
         if (file.isEmpty()) {
-            throw new UnprocessableException ("! File upload is failed: File is empty !");
+            throw new UnprocessableException("File upload is failed: File is empty");
         }
         
         String fileName = TOM_CAT_DIR + File.separator + job.getId() + ".xls";

@@ -1,6 +1,5 @@
 package demo.geo.app.services;
 
-import demo.geo.app.entities.Job;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -10,13 +9,14 @@ import java.io.IOException;
 import java.util.List;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileInputStream;
 
 import demo.geo.app.entities.GeologicalClass;
 import demo.geo.app.entities.Section;
 import demo.geo.app.dao.SectionRepository;
 import demo.geo.app.dao.JobRepository;
 import demo.geo.app.enums.JStatus;
-import java.io.FileInputStream;
+import demo.geo.app.entities.Job;
 
 /**
  * Provides methods for {@link demo.geo.app.services.FileService} management
