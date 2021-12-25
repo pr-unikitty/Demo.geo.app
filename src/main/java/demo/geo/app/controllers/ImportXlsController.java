@@ -1,7 +1,6 @@
 package demo.geo.app.controllers;
 
 import org.springframework.web.bind.annotation.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
 import io.swagger.annotations.ApiOperation;
 
@@ -18,7 +17,6 @@ public class ImportXlsController {
 
     private final XlsService xmlService;
         
-    @Autowired
     public ImportXlsController(XlsService xmlService) {
         this.xmlService = xmlService;
     }
@@ -34,7 +32,7 @@ public class ImportXlsController {
     @GetMapping("/{id}")
     @ApiOperation("Returns result of importing by Job ID")
     public JStatus getImportStatus(@PathVariable long id) {
-        return xmlService.getJobStatus(JType.EXPORT, id);
+        return xmlService.getJobStatus(JType.IMPORT, id);
     }
     
 }

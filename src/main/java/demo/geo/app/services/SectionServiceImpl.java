@@ -1,7 +1,6 @@
 package demo.geo.app.services;
 
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
 import javax.transaction.Transactional;
 
 import java.util.*;
@@ -22,7 +21,6 @@ public class SectionServiceImpl implements SectionService {
     
     private final String SECTION_NOT_FOUND_BY_ID = "Section with this ID does not exist";
     
-    @Autowired
     public SectionServiceImpl(SectionRepository sectionRepository) {
         this.sectionRepository = sectionRepository;
     }
