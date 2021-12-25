@@ -1,6 +1,5 @@
 package demo.geo.app.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.annotations.ApiOperation;
 
@@ -17,7 +16,6 @@ public class SectionController {
     
     private final SectionService sectionService;
     
-    @Autowired
     public SectionController(SectionService sectionService) {
         this.sectionService = sectionService;
     }

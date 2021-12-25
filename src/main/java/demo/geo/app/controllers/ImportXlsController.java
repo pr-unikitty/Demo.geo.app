@@ -1,7 +1,6 @@
 package demo.geo.app.controllers;
 
 import org.springframework.web.bind.annotation.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
 import io.swagger.annotations.ApiOperation;
 
@@ -18,7 +17,6 @@ public class ImportXlsController {
 
     private final XlsService xmlService;
         
-    @Autowired
     public ImportXlsController(XlsService xmlService) {
         this.xmlService = xmlService;
     }

@@ -1,9 +1,10 @@
 package demo.geo.app.services;
 
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.apache.poi.hssf.usermodel.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
@@ -30,15 +31,15 @@ public class FileServiceImpl implements FileService {
     
     private final SectionService sectionService;
 
-    final static String TOM_CAT_DIR = System.getProperty("catalina.home");
+    static final String TOM_CAT_DIR = System.getProperty("catalina.home");
+    private static final Logger logger = LoggerFactory.getLogger(FileService.class);
     
-    @Autowired
-    public FileServiceImpl (SectionRepository sectionRepository, JobRepository jobRepository,
+    public FileServiceImpl(SectionRepository sectionRepository, JobRepository jobRepository,
             SectionService sectionService) {
         this.sectionRepository = sectionRepository;
         this.jobRepository = jobRepository;
         this.sectionService = sectionService;
-        //System.out.println("*** "+ TOM_CAT_DIR +" ***");
+        logger.info("TomCat dir: "+ TOM_CAT_DIR);
     }
     
     /**

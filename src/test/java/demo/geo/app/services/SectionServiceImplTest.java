@@ -9,7 +9,6 @@ import org.mockito.ArgumentCaptor;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,7 +20,6 @@ import java.util.Collections;
 import demo.geo.app.dao.SectionRepository;
 import demo.geo.app.entities.GeologicalClass;
 import demo.geo.app.entities.Section;
-import demo.geo.app.dao.GeologicalClassRepository;
 import demo.geo.app.exceptions.NotFoundException;
 import demo.geo.app.exceptions.UnprocessableException;
 

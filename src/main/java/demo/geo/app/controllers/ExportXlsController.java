@@ -1,7 +1,6 @@
 package demo.geo.app.controllers;
 
 import org.springframework.web.bind.annotation.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.FileSystemResource;
 import io.swagger.annotations.ApiOperation;
@@ -22,7 +21,6 @@ public class ExportXlsController {
 
     private final XlsService xmlService;
         
-    @Autowired
     public ExportXlsController(XlsService xmlService) {
         this.xmlService = xmlService;
     }
