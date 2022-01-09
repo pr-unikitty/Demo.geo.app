@@ -1,4 +1,9 @@
 build
 /.nb-gradle/
 /.gradle/
+<<<<<<< HEAD
 /.nbproject/
+/nbproject/
+=======
+/.nbproject/
+>>>>>>> b6b1d3ea89369cfe69423949044540504aea7f46
