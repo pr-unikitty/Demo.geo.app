@@ -30,7 +30,7 @@ public class SectionServiceImplTest {
     private SectionRepository sectionRepository;
     
     private SectionService sectionService;
-    
+
     private Section section;
     private GeologicalClass geoClass;
     
