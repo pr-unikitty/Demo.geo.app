@@ -1,5 +1,5 @@
 # REST CRUD API for Sections and GeologicalClasses + importing/exporting XLS files  
-Technology stack: JDK 11, Spring Boot 2.5.6, Hipernate, SpringData, ApachePOI, Gradle 7.2
+Technology stack: JDK 11, Spring Boot 2.5.6, Hibernate, SpringData, ApachePOI, Gradle 7.2
 
 ## Features  
   * JSON-format
