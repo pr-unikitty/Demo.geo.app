@@ -21,7 +21,7 @@ public class ImportXlsController {
         this.xmlService = xmlService;
     }
     
-    @PostMapping("")
+    @PostMapping
     @ApiOperation("Returns Async Job and launches importing")
     public Job handleFileUpload(@RequestParam("file") MultipartFile file) throws IOException {
         Job job = xmlService.startJob(JType.IMPORT);

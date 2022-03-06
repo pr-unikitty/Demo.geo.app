@@ -8,7 +8,7 @@ import org.mockito.Mock;
 import org.mockito.ArgumentCaptor;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,7 +33,7 @@ public class SectionServiceImplTest {
 
     private Section section;
     private GeologicalClass geoClass;
-    
+
     private static final long SECTION_ID = 1L;
     private static final String SECTION_NAME = "Section 1";
     private static final long GEOCLASS_ID = 2L;
@@ -79,7 +79,7 @@ public class SectionServiceImplTest {
      */
     @Test
     public void testFindOne_Failed() {
-        final long WRONG_SESSION_ID = SECTION_ID + 1L;
+        long WRONG_SESSION_ID = SECTION_ID + 1L;
         
         when(sectionRepository.findById(WRONG_SESSION_ID)).thenReturn(null);
         assertThatThrownBy(() -> sectionService.findOne(WRONG_SESSION_ID))
@@ -92,8 +92,8 @@ public class SectionServiceImplTest {
      */
     @Test
     public void testCreateSection_Success() {
-        final long NEW_SESSION_ID = SECTION_ID + 1L;
-        final String NEW_SECTION_NAME = SECTION_NAME + "2";
+        long NEW_SESSION_ID = SECTION_ID + 1L;
+        String NEW_SECTION_NAME = SECTION_NAME + "2";
         
         GeologicalClass newGeoClass = new GeologicalClass(NEW_SESSION_ID, GEOCLASS_NAME, GEOCLASS_CODE);
         Section newSection = new Section(NEW_SECTION_NAME, List.of(newGeoClass));
@@ -157,7 +157,7 @@ public class SectionServiceImplTest {
      */
     @Test
     public void testDeleteById_Failed_WrongId() {
-        final long WRONG_SESSION_ID = SECTION_ID + 1L;
+        long WRONG_SESSION_ID = SECTION_ID + 1L;
         
         when(sectionRepository.findById(WRONG_SESSION_ID)).thenReturn(null);
         assertThatThrownBy(() -> sectionService.deleteById(WRONG_SESSION_ID))
@@ -174,6 +174,65 @@ public class SectionServiceImplTest {
         sectionService.deleteAll();
         verify(sectionRepository).findAll();
         verify(sectionRepository).deleteById(any());
+    }
+
+    /**
+     * Test of addGeoclassOrThrow method, of class SectionServiceImpl.
+     */
+    @Test
+    public void testAddGeoclassOrThrow_Success() {
+        GeologicalClass otherGeoClass = new GeologicalClass(null, "other name", "other code");
+        when(sectionRepository.findById(SECTION_ID)).thenReturn(section);
+
+        sectionService.addGeoclassOrThrow(SECTION_ID, otherGeoClass);
+        verify(sectionRepository).findById(SECTION_ID);
+        verify(sectionRepository).save(any());
+    }
+
+    /**
+     * Test of addGeoclassOrThrow method, of class SectionServiceImpl.
+     */
+    @Test
+    public void testAddGeoclassOrThrow_Failed_WrongId() {
+        long WRONG_SESSION_ID = SECTION_ID + 1L;
+        GeologicalClass otherGeoClass = new GeologicalClass(null, "other name", "other code");
+
+        when(sectionRepository.findById(WRONG_SESSION_ID)).thenReturn(null);
+        assertThatThrownBy(() -> sectionService.addGeoclassOrThrow(WRONG_SESSION_ID, otherGeoClass))
+                .isInstanceOf(NotFoundException.class);
+
+        verify(sectionRepository).findById(WRONG_SESSION_ID);
+        verify(sectionRepository, times(0)).save(any());
+    }
+
+    /**
+     * Test of addGeoclassOrThrow method, of class SectionServiceImpl.
+     */
+    @Test
+    public void testAddGeoclassOrThrow_Failed_TheSameName() {
+        GeologicalClass otherGeoClass = new GeologicalClass(null, GEOCLASS_NAME, "other code");
+
+        when(sectionRepository.findById(SECTION_ID)).thenReturn(section);
+        assertThatThrownBy(() -> sectionService.addGeoclassOrThrow(SECTION_ID, otherGeoClass))
+                .isInstanceOf(UnprocessableException.class);
+
+        verify(sectionRepository).findById(SECTION_ID);
+        verify(sectionRepository, times(0)).save(any());
+    }
+
+    /**
+     * Test of addGeoclassOrThrow method, of class SectionServiceImpl.
+     */
+    @Test
+    public void testAddGeoclassOrThrow_Failed_TheSameCode() {
+        GeologicalClass otherGeoClass = new GeologicalClass(null, "other name", GEOCLASS_CODE);
+
+        when(sectionRepository.findById(SECTION_ID)).thenReturn(section);
+        assertThatThrownBy(() -> sectionService.addGeoclassOrThrow(SECTION_ID, otherGeoClass))
+                .isInstanceOf(UnprocessableException.class);
+
+        verify(sectionRepository).findById(SECTION_ID);
+        verify(sectionRepository, times(0)).save(any());
     }
 
     /**
@@ -210,7 +269,7 @@ public class SectionServiceImplTest {
             GeologicalClass newGeoClass = new GeologicalClass(SECTION_ID, "other name", "other code");
 
             boolean result = sectionService.addGeoClassIfAbsent(section, newGeoClass);
-            assertEquals(result, false);
+            assertFalse(result);
     }
         
     /**
@@ -221,7 +280,7 @@ public class SectionServiceImplTest {
         GeologicalClass newGeoClass = new GeologicalClass(SECTION_ID, GEOCLASS_NAME, "other code");
         
         boolean result = sectionService.addGeoClassIfAbsent(section, newGeoClass);
-        assertEquals(result, true);
+        assertTrue(result);
     }
     
     /**
@@ -229,10 +288,10 @@ public class SectionServiceImplTest {
      */
     @Test
     public void testAddGeoClassIfAbsent_Failed_TheSameCode() {
-        GeologicalClass newGeoClass = new GeologicalClass(SECTION_ID, "othen name", GEOCLASS_CODE);
+        GeologicalClass newGeoClass = new GeologicalClass(SECTION_ID, "other name", GEOCLASS_CODE);
         
         boolean result = sectionService.addGeoClassIfAbsent(section, newGeoClass);
-        assertEquals(result, true);
+        assertTrue(result);
     }
     
 }
