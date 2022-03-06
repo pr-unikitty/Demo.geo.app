@@ -34,10 +34,10 @@ public class SectionServiceImpl implements SectionService {
     public List<Section> findAll() {
         return sectionRepository.findAll();
     }
-    
+
     /**
      * Finds and returns {@link Section} by ID
-     * 
+     *
      * @param id id of section to find
      * @return section or null
      */
@@ -122,7 +122,7 @@ public class SectionServiceImpl implements SectionService {
             throw new NotFoundException(SECTION_NOT_FOUND_BY_ID);
         }
         if (addGeoClassIfAbsent(existingSection, geoClass)) {
-            throw new UnprocessableException("GeologicalClass witn these Name or Code already exists in this Section");
+            throw new UnprocessableException("GeologicalClass with these Name or Code already exists in this Section");
         }
         return sectionRepository.save(existingSection);
     }
@@ -135,8 +135,7 @@ public class SectionServiceImpl implements SectionService {
      */
     @Override
     public List<Section> findSectionsByGeologicalCode (String geoCode) {
-        List<Section> neededSections = sectionRepository.findSectionsByGeoCode(geoCode);
-        return neededSections;
+        return sectionRepository.findSectionsByGeoCode(geoCode);
     }
 
     /**

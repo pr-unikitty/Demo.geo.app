@@ -1,9 +1,18 @@
 build
-/.nb-gradle/
 /.gradle/
-<<<<<<< HEAD
-/.nbproject/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### NetBeans ###
 /nbproject/
-=======
-/.nbproject/
->>>>>>> b6b1d3ea89369cfe69423949044540504aea7f46
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
