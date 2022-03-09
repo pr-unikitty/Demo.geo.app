@@ -6,10 +6,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-import demo.geo.app.enums.JType;
+import demo.geo.app.enums.JobType;
 
 @Repository
 public interface JobRepository extends JpaRepository<Job, Long> {
 
-    List<Job> findByIdAndType(Integer jobId, JType jobType);
+    List<Job> findByIdAndType(Integer jobId, JobType jobType);
+    
 }

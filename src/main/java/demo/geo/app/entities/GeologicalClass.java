@@ -11,6 +11,7 @@ import javax.persistence.*;
 @Entity
 @Table(name="geoclasses")
 public class GeologicalClass implements Serializable {
+    
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;

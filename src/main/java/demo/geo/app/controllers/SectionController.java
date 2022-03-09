@@ -11,7 +11,7 @@ import demo.geo.app.entities.GeologicalClass;
 import demo.geo.app.services.SectionService;
 
 @RestController
-@RequestMapping("/sections")
+@RequestMapping("sections")
 public class SectionController {
     
     private final SectionService sectionService;
@@ -20,45 +20,45 @@ public class SectionController {
         this.sectionService = sectionService;
     }
     
-    @PostMapping("")
+    @PostMapping
     @ApiOperation("Adds Section with list of GeologicalClasses. "
-            + "List of geoClasses can be null; geoClasses must have uniq names and codes")
+            + "List of geoClasses can be null; geoClasses must have unique names and codes")
     public Section createSection(@Valid @RequestBody Section section) {
         return sectionService.createSection(section);
     }
     
-    @PostMapping("/{id}/geoclasses")
+    @PostMapping("{id}/geoclasses")
     @ApiOperation("Adds new geologicalClass to existing Section")
     public Section addGeoClass(@PathVariable long id, @Valid @RequestBody GeologicalClass geoClass) {
         return sectionService.addGeoclassOrThrow(id, geoClass);
     }
     
-    @GetMapping("/{id}")
+    @GetMapping("{id}")
     @ApiOperation("Finds one Section by ID")
     public Section findById(@PathVariable long id) {
         return sectionService.findOne(id);
     }
     
-    @GetMapping("")
+    @GetMapping
     @ApiOperation("Finds all Section by ID")
     public List<Section> findAll() {
        return sectionService.findAll();
     }
     
-    @DeleteMapping("/{id}")
+    @DeleteMapping("{id}")
     @ApiOperation("Deletes one Section by ID")
     public void deleteById(@PathVariable long id) {
         sectionService.deleteById(id);
     }
     
-    @DeleteMapping("")
+    @DeleteMapping
     @ApiOperation("Deletes all Section by ID")
     public void deleteAll() {
         sectionService.deleteAll();
     }
  
-    @GetMapping("/by-code")
-    @ApiOperation("TZ#2: Returns a list of all Sections that have geologicalClasses with the specified code")
+    @GetMapping("by-code")
+    @ApiOperation("Returns a list of all Sections that have geologicalClasses with the specified code")
     public List<Section> findByGeologicalCode(@RequestParam(value = "code", required = true) String geoCode) {
         return sectionService.findSectionsByGeologicalCode(geoCode);
     }

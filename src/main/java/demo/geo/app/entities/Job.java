@@ -4,8 +4,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-import demo.geo.app.enums.JStatus;
-import demo.geo.app.enums.JType;
+import demo.geo.app.enums.*;
 
 @Entity
 public class Job implements Serializable {
@@ -15,23 +14,27 @@ public class Job implements Serializable {
     private Long id;
     
     @Enumerated(EnumType.STRING)
-    private JType type;
+    private JobType type;
     
     @Enumerated(EnumType.STRING)
-    private JStatus status;
+    private JobStatus status; 
 
+    @Enumerated(EnumType.STRING)
+    private JobFormat format;
+    
     private LocalDateTime dateTime;
     
     public Job() {
     }
 
-    public Job(JType type) {
+    public Job(JobType type) {
         this.type = type;
     }
     
-    public Job(JType type, JStatus status, LocalDateTime dateTime) {
+    public Job(JobType type, JobStatus status, JobFormat format, LocalDateTime dateTime) {
         this.type = type;
         this.status = status;
+        this.format = format;
         this.dateTime = dateTime;
     }
 
@@ -43,19 +46,19 @@ public class Job implements Serializable {
         this.id = id;
     }
 
-    public JType getType() {
+    public JobType getType() {
         return type;
     }
 
-    public void setType(JType type) {
+    public void setType(JobType type) {
         this.type = type;
     }
 
-    public JStatus getStatus() {
+    public JobStatus getStatus() {
         return status;
     }
 
-    public void setStatus(JStatus status) {
+    public void setStatus(JobStatus status) {
         this.status = status;
     }
 
@@ -65,6 +68,14 @@ public class Job implements Serializable {
 
     public void setDateTime(LocalDateTime dateTime) {
         this.dateTime = dateTime;
+    }
+
+    public JobFormat getFormat() {
+        return format;
+    }
+
+    public void setFormat(JobFormat format) {
+        this.format = format;
     }
 
 }

@@ -10,35 +10,34 @@ import java.io.File;
 import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
 
-import demo.geo.app.enums.JStatus;
-import demo.geo.app.enums.JType;
+import demo.geo.app.enums.*;
 import demo.geo.app.entities.Job;
-import demo.geo.app.services.XlsService;
+import demo.geo.app.services.FileService;
 
 @RestController
-@RequestMapping("/export")
+@RequestMapping("export/xls")
 public class ExportXlsController {
 
-    private final XlsService xmlService;
+    private final FileService xmlService;
         
-    public ExportXlsController(XlsService xmlService) {
+    public ExportXlsController(FileService xmlService) {
         this.xmlService = xmlService;
     }
     
-    @GetMapping("")
-    @ApiOperation("Returns Async Job and launches exporting DB to the xls file")
+    @GetMapping
+    @ApiOperation("Returns Async Job and launches exporting DB to the XLS-file")
     public Job exportSections() {
-        return xmlService.startJob(JType.EXPORT);
+        return xmlService.startJob(JobType.EXPORT, JobFormat.XLS);
     }
     
-    @GetMapping("/{id}")
-    @ApiOperation("Returns result of parsed file by Job ID")
-    public JStatus getExportStatus(@PathVariable long id) {
-        return xmlService.getJobStatus(JType.EXPORT, id);
+    @GetMapping("{id}")
+    @ApiOperation("Returns the Job as result of parsed file by ID")
+    public JobStatus getExportStatus(@PathVariable long id) {
+        return xmlService.getJobStatus(JobType.EXPORT, id);
     }
 
-    @GetMapping(value = "/{id}/file")
-    @ApiOperation("Returns a file by Job ID")
+    @GetMapping("{id}/file")
+    @ApiOperation("Returns the file by Job ID")
     public @ResponseBody Resource getXLSFileByJobId(@PathVariable long id, HttpServletResponse response) 
             throws MalformedURLException, IOException {
         File file = xmlService.exportXLS(id);

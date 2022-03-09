@@ -1,162 +1,158 @@
 package demo.geo.app.services;
 
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Async;
-import org.apache.poi.hssf.usermodel.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
-import demo.geo.app.entities.GeologicalClass;
 import demo.geo.app.entities.Section;
+import demo.geo.app.exceptions.NotFoundException;
+import demo.geo.app.exceptions.UnprocessableException;
 import demo.geo.app.dao.SectionRepository;
 import demo.geo.app.dao.JobRepository;
-import demo.geo.app.enums.JStatus;
+import demo.geo.app.enums.JobStatus;
+import demo.geo.app.enums.JobType;
 import demo.geo.app.entities.Job;
+import demo.geo.app.enums.JobFormat;
 
 /**
- * Provides methods for {@link demo.geo.app.services.FileService} management
+ * Provides methods for {@link FileService} management
  */
 @Service
 public class FileServiceImpl implements FileService {
-    
+
     private final SectionRepository sectionRepository;
 
     private final JobRepository jobRepository;
-    
-    private final SectionService sectionService;
 
-    static final String TOM_CAT_DIR = System.getProperty("catalina.home");
-    private static final Logger logger = LoggerFactory.getLogger(FileService.class);
+    private final XLSService xlsService;
     
-    public FileServiceImpl(SectionRepository sectionRepository, JobRepository jobRepository,
-            SectionService sectionService) {
+    final static String TOM_CAT_DIR = System.getProperty("catalina.home");
+    
+    public FileServiceImpl (SectionRepository sectionRepository, JobRepository jobRepository,
+            XLSService xlsService) {
         this.sectionRepository = sectionRepository;
         this.jobRepository = jobRepository;
-        this.sectionService = sectionService;
-        logger.info("TomCat dir: "+ TOM_CAT_DIR);
+        this.xlsService = xlsService;
     }
     
     /**
-     * Launches exporting file (to local tmp dir of TomCat on the server)
-     * (for TZ#3: /export)
-     * @param job
+     * Starts new {@link Job} with status "IN_PROGRESS" 
+     * (for TZ#3: /import OR /export)
+     * 
+     * @param jobType       import or export
+     * @param jobFormat     file format
+     * @return              started job
      */
-    @Async
     @Override
-    public void generateXLS(Job job) {
-        try {
-            job.setStatus(JStatus.IN_PROGRESS);
-            Iterable<Section> sections = sectionRepository.findAll();
-
-            HSSFWorkbook book = new HSSFWorkbook();
-            HSSFSheet sheet = book.createSheet("Sections");
-            HSSFRow headerRow = sheet.createRow(0);
-            writeCell(headerRow,"Section name");
-
-            for (Section sec : sections) {
-                // Section name
-                HSSFRow row = sheet.createRow(sheet.getLastRowNum() + 1);
-                writeCell(row,sec.getName());
-                
-                // GeoClasses
-                List<GeologicalClass> geoClasses = sec.getGeologicalClasses();
-                for (GeologicalClass geoClass : geoClasses) {
-                    if (row.getLastCellNum() == headerRow.getLastCellNum()) {
-                        int i = Math.floorDiv(headerRow.getLastCellNum(), 2) + 1;
-                        writeCell(headerRow,String.format("Class %d name", i));
-                        writeCell(headerRow,String.format("Class %d code", i));
-                    }
-                    writeCell(row,(geoClass.getName()));
-                    writeCell(row,(geoClass.getCode()));
-                }
+    public Job startJob(JobType jobType, JobFormat jobFormat) {
+        Job newJob = new Job(jobType, JobStatus.IN_PROGRESS, jobFormat, LocalDateTime.now());
+        if (newJob.getType() == JobType.EXPORT) {
+            List<Section> sections = sectionRepository.findAll();
+            if (sections.isEmpty()) {
+                throw new NotFoundException("No any section found (DB is empty)");
             }
+            xlsService.generateXLS(newJob);
+        }
+        return jobRepository.save(newJob);
+    }
 
-            String exportFileName = TOM_CAT_DIR + File.separator + job.getId().toString() + ".xls";
-            book.write(new FileOutputStream(exportFileName));
-            job.setStatus(JStatus.DONE);
-        } catch (IOException e) {
-            job.setStatus(JStatus.ERROR);
-        } finally {
-            jobRepository.save(job);
+    /**
+     * Returns result of processing by JobID ("DONE", "IN PROGRESS", "ERROR")
+     * (for TZ#3: /export/id or /import/id)
+     * 
+     * @param type type of job must match with the one specified in the controller
+     * it's needed to stop showing import-file status on request /export/id and vice versa 
+     * @param jobId id of job to show status
+     * @return status of job
+     */
+    @Override
+    public JobStatus getJobStatus(JobType type, long jobId) {
+        Job existingJob = jobRepository.getById(jobId);
+        if (existingJob == null) {
+            throw new NotFoundException("Job with this ID does not exist");
+        }
+        if (!existingJob.getType().equals(type)) {
+            throw new UnprocessableException("Job type with this ID is not [" + type + "]");
+        }
+        return existingJob.getStatus();
+    }
+    
+    /**
+     * Returns exporting file by ID of {@link Job}; name of file is obtained by: id.xls 
+     * (for TZ#3: /export/id/file)
+     * 
+     * @param id job id of exporting file
+     * @return file 'id.xls' of job
+     * @throws MalformedURLException
+     * @throws FileNotFoundException
+     */
+    @Override
+    public File exportXLS(Long id) throws MalformedURLException, FileNotFoundException {
+        Job job = jobRepository.getById(id); 
+        
+        if (job.getStatus().equals(JobStatus.DONE) && job.getType().equals(JobType.EXPORT)) {
+            String fileName = generateFileName(id, "xls");
+            File file = new File(fileName);
+            if (!file.exists()) {
+                throw new NotFoundException("File " + fileName + " is not found");
+            }
+            return file;
+        } else {
+            throw new UnprocessableException("Job status is not [DONE] or job type is not [EXPORT]");
         }
     }
-    
+
     /**
-     * Reads uploaded file and parses it as XLS book; 
-     * Also sets up the job status 
+     * Loads user file and saves it to temp local dir of Tom Cat with name as JobID.xls
      * (for TZ#3: /import)
+     * Then starts the parsing this file
+     * !import add any records, even it's already exists in DB
      * 
-     * @param file file to parse
-     * @param job current job of importing
+     * @param job
+     * @param file
+     * @throws IOException
      */
     @Async
     @Override
-    public void parseXLS(File file, Job job) {
-        try {
-            FileInputStream inputStream = new FileInputStream(file);
-            HSSFWorkbook xlsFile = new HSSFWorkbook(inputStream);
-            inputStream.close();
-            HSSFSheet sheet = xlsFile.getSheetAt(0); // header
+    public void importXLS(Job job, MultipartFile file) throws IOException {
+        if (file.isEmpty()) {
+            throw new UnprocessableException("File upload is failed: File is empty");
+        }
+        
+        String fileName = generateFileName(job.getId(), "xls");
+        File newFile = new File(fileName);
+        try (BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(newFile))) {
+            stream.write(file.getBytes());
+            stream.flush();
+        }
+        
+        xlsService.parseXLS(newFile, job);
+    }
 
-            for (int i = 1; i < sheet.getPhysicalNumberOfRows(); i++) {
-                HSSFRow currentRow = sheet.getRow(i);
-                if (currentRow == null) {
-                    continue;
-                }
-                
-                String secName = currentRow.getCell(0).getStringCellValue();
-                if (sectionRepository.findByName(secName) != null) {
-                    continue;
-                }
-                Section section = sectionRepository.save(new Section(secName));
-                
-                // Jumping for pairs {geoClass, geoCode}
-                for (int j = 1; j < currentRow.getLastCellNum(); j += 2) {
-                    String geoClassName = readCell(currentRow, j);
-                    String geoClassCode = readCell(currentRow, j+1);
-                    if (geoClassName == null || geoClassCode == null) {
-                        continue;
-                    }
-                    sectionService.addGeoClassIfAbsent(section, new GeologicalClass(section.getId(), geoClassName, geoClassCode));
-                }
-                sectionRepository.save(section);
-            }
-            job.setStatus(JStatus.DONE);
-            jobRepository.save(job);
-        } catch (IOException e) {
-            job.setStatus(JStatus.ERROR);
-            jobRepository.save(job);
-        }
+    @Override
+    public void importCSV(Job job, File file) {
+
     }
-    
+
     /**
-     * Auxiliary method for reading geoClassName or geoClassCode from HSSF cell
-     * 
-     * @param currentRow current row to read cell
-     * @param cellNum number of cell in current row to read 
-     * @return readed text value 
+     * Generates unique name of file using id of {@link Job} and current timestamp
+     *
+     * @param id    job id
+     * @param ext   file extension
+     * @return      full name of file like {dir_path}\\{id_timestamp.ext}
      */
-    private String readCell (HSSFRow currentRow, int cellNum) {
-        HSSFCell geoNameCell = currentRow.getCell(cellNum);
-        if(geoNameCell == null) {
-            return null;
-        }
-        return geoNameCell.getStringCellValue();
-    }
-    
-    /**
-     * Auxiliary method for adding cell to row in HSSF book
-     * @param row current row
-     * @param stringValue text to add in the cell
-     */
-    private void writeCell(HSSFRow row, String stringValue) {
-        HSSFCell newCell = row.createCell(Math.max(row.getLastCellNum(), 0));
-        newCell.setCellValue(stringValue);
+    private String generateFileName(Long id, String ext) {
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-mm-dd_hh-mm-ss"));
+        return TOM_CAT_DIR + File.separator + id + "_" + timestamp + "." + ext;
     }
 }
